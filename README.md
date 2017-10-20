@@ -9,7 +9,7 @@ Operators:
   </tr>
   <tr>
     <td>a</td>
-    <td>Sets current cell to 0</td> 
+    <td>Sets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell</td> 
   </tr>
   <tr>
     <td>p</td>
@@ -38,7 +38,7 @@ Operators:
   </tr>
   <tr>
     <td>.</td>
-    <td>Prints a symbol with code from current cell</td> 
+    <td>Puts a symbol with code from current int cell to current string cell</td> 
   </tr>
   <tr>
     <td>v</td>
