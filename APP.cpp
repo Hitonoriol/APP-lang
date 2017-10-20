@@ -3,18 +3,41 @@
 #include <iomanip>
 #include <ctime>
 #include <cstring>
+#include <string>
+#include <sstream>
+#include <fstream>
 using namespace std;
 double c[256];
 string sc[256];
 int ide = 0;
 int u = 0;
-int ech = 1;
+int ech = 0;
 int mode = 0;
+string cbuf;
 
+void op (string arg);
 void pxtc(string arg);
+string gt(){
+	string arg;
+	getline(std::cin,arg);
+	return arg;
+}
 void initRandom()
 {
 	srand(time(NULL));
+}
+int iconv(string Text){ 
+	int Result; 
+	stringstream convert(Text); 
+	if ( !(convert >> Result) ) Result = 0; 
+	return Result; 
+}
+string charc(char a){
+stringstream ss;
+string s;
+ss << a;
+ss >> s;
+return s;
 }
 
 int srnd(int first, int last)
@@ -34,39 +57,65 @@ void echo(string arg)
 	cout << arg << endl;
 }
 
-void param(int par, int state)
-{
-	int suc = 0;
-	if (par == 666)
-	{
-		ide = state;
-		suc = 1;
-	}
-	if (par == 0)
-	{
-		ech = state;
-		suc = 1;
-	}
-	if (par == 1)
-	{
-		mode = state;
-		suc = 1;
-	}
-	if (par == 2)
-	{
-		u = state;
-		suc = 1;
-	}
-	if (suc == 1)
-		cout << endl << "INTERPRETER PARAM " << par << " SET TO " << state <<
-			endl;
-	else
-		cout << endl << "NO PARAM WITH THIS ID!" << endl;
+bool writeFile(string filename, string arg){
+	ofstream fout(filename.c_str()); 
+	fout << arg;
+	fout.close();
+	return true;
 }
+
+string readFile(string path){
+    ifstream input(path.c_str());
+    string str, result;
+    while(std::getline(input, str)) {
+        result += str;
+    }
+    return result;
+}
+
 bool cmds(string arg){
+	if (arg == "rb"){
+		op(cbuf);
+		return true;
+	}
 	if (arg=="cls"){
 		system("cls");
 		return true;
+	}
+	if (arg=="ech"){
+		if (ech==1)
+		ech=0;
+		else
+		ech=1;
+		return true;
+	}
+	if (arg=="save"){
+		string fn;
+		cout<<"ENTER FILENAME: ";
+		getline(std::cin, fn);
+		fn+=".appl";
+		writeFile(fn,cbuf);
+		cout<<"Saved your program (only last command buffer)";
+		return true;
+	}
+	if (arg=="load"){
+		cout<<"ENTER FILENAME TO LOAD:";
+		cbuf = readFile(gt()+".appl");
+		cout<<"\nLoaded code to your command buffer!";
+		return true;
+	}
+	if (arg=="run"){
+		cout<<"ENTER FILENAME TO RUN:";
+		op(readFile(gt()+".appl"));
+		cout<<"\nFinished run from file!";
+		return true;
+	}
+	if (arg=="help"){
+		cout<<"INTERPRETER COMMANDS:\n**********\nech - debug mode on/of\nrb - run commands from command buffer (last used)\nsave - save command buffer to file\nload - load file to command buffer\nrun - run file\ncls - clear screen\n\nDou you want to see operators list? (y/n): ";	
+		if (gt()=="y"){
+		cout<<"\n**********\nOPERATORS:\n**********\n";
+		cout<<"a\nSets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell\n\np\nIncrements current cell\n\nm\nDecrements current cell\n\nw\nWrites current int cell value if current mode is 0 and writes current string cell value if mode is 1\n\n_\nEchoes end of line\n\n>\nNext cell\n\n<\nPrevious cell\n\n.\nPuts a symbol with code from current int cell to current string cell\n\nv\nAdds 5 to current cell\n\nx\nAdds 10 to current cell\n\ni\nIf MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.\n\n+\nSets value of current cell to sum of two previous cells (cell[current] = cell[current-2] + cell[current-1])\n\n-\nSets value of current cell to cell[current-2] - cell[current-1]\n\n?\nIf cell[current-2] == cell[current-1], sets current cell to 1, otherwise, to 0.\n\n g\nIf cell[current-2] > cell[current-1], sets current cell to 1, otherwise, to 0.\n\n s\nIf cell[current-2] < cell[current-1], sets current cell to 1, otherwise, to 0.\n\n r\nSets current cell value to random int in range min = cell[current-2] & max = cell[current-1]\n\n{\nRepeats 1 operator after it cell[current-1] times\n\n!\nExecutes next operator if cell[current-1] == 1\n\nc\nPrints current cell number\n\nS\nSwitches MODE between 0 (int) and 1 (string)\n\n/\nMakes cell[current] = cell[current-2] / cell[current-1]\n\nR\nMakes cell[current] = cell[current-2] / cell[current-1]\n";
+	}
 	}
 	return false;
 }
@@ -80,12 +129,17 @@ if(ide==0){
 	return;
 	nn = arg.size();
 	string op;
+	cbuf = arg;
 	while (i < nn)
 	{
 		op = arg.substr(i, 1);
 		if(op==" ")op="_";
-		if (op == "a")
-			c[u] = 0;
+		if (op == "a"){
+			if (mode == 0)
+				c[u] = 0;
+			else
+			sc[u] = "";
+		}
 		else if (op == "p")
 			c[u]++;
 		else if (op == "m")
@@ -107,9 +161,10 @@ if(ide==0){
 			u--;
 		else if (op == ".")
 		{
-			char a;
-			a = c[u];
-			cout << a;
+			int aa = c[u];
+			char t = aa;
+			string a = charc(t);
+			sc[u]+=a;
 		}
 		else if (op == "v")
 		{
@@ -124,12 +179,12 @@ if(ide==0){
 			if (mode == 0)
 			{
 				cout << "INPUT INT/CHAR: ";
-				cin >> c[u];
+				c[u]=iconv(gt());
 			}
 			else
 			{
 				cout << "INPUT STRING: ";
-				cin >> sc[u];
+				sc[u] = gt();
 			}
 		}
 		else if (op == "+")
@@ -219,15 +274,6 @@ if(ide==0){
 			sc[u] = arg.substr(i + 1, c[u - 1]);
 			i += c[u - 1];
 		}
-		else if (op == "@")
-		{
-			int aa, bb;
-			cout << endl << "PARAM ID: ";
-			cin >> aa;
-			cout << endl << "VALUE: ";
-			cin >> bb;
-			param(aa, bb);
-		}
 		else
 		{
 			if (ech == 1)
@@ -249,7 +295,7 @@ void pxtc(string arg)
 main()
 {
 	string in;
-	echo("APP CONSOLE INTERPRETER \n");
+	echo("APP CONSOLE INTERPRETER \nType help to see the list of avalaible commands");
 	while (true)
 	{
 		cout << endl << ">> ";
