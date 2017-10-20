@@ -121,6 +121,7 @@ bool cmds(string arg){
 }
 void op(string arg)
 {
+	int echof = 0;
 if(ide==0){
 	int i = 0;
 	int nn = 0;
@@ -133,7 +134,14 @@ if(ide==0){
 	while (i < nn)
 	{
 		op = arg.substr(i, 1);
-		if(op==" ")op="_";
+		
+		if (op == "\"")
+			if (echof == 1)
+			echof = 0;
+			else echof = 1;
+			if (echof==1 && op!="\"")
+			sc[u]+=op;
+			else{
 		if (op == "a"){
 			if (mode == 0)
 				c[u] = 0;
@@ -279,6 +287,7 @@ if(ide==0){
 			if (ech == 1)
 				cout << endl << "UNKNOWN OP: '" + op + "'" << endl;
 		}
+	}
 		i++;
 	}
 	}
