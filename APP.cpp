@@ -8,7 +8,7 @@
 #include <fstream>
 #define BUFCAP 4096
 using namespace std;
-double c[BUFCAP];
+int c[BUFCAP];
 string sc[BUFCAP];
 int ide = 0;
 int u = 0;
@@ -252,6 +252,7 @@ void op(string arg)
 		}
 		else if (op == "?")
 		{
+			if (mode==0){
 			if (c[u - 2] == c[u - 1])
 			{
 				c[u] = 1;
@@ -260,6 +261,18 @@ void op(string arg)
 			{
 				c[u] = 0;
 			}
+		}
+		else
+		{
+			if (sc[u - 2] == sc[u - 1])
+			{
+				c[u] = 1;
+			}
+			else
+			{
+				c[u] = 0;
+			}
+		}
 		}
 		else if (op == "g")
 		{
@@ -310,6 +323,17 @@ void op(string arg)
 		else if (op == "c")
 		{
 			cout << u;
+		}
+		else if (op == "C")
+		{
+			if (mode==0)
+			c[c[u-1]] = c[u];
+			else
+			sc[c[u-1]] = sc[u];
+		}
+		else if (op == "G")
+		{
+			i = c[u];
 		}
 		else if (op == "S")
 		{
