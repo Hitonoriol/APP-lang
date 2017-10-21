@@ -100,6 +100,14 @@ Operators:
     <td>R</td>
     <td>Makes cell[current] = cell[current-2] / cell[current-1]</td> 
   </tr>
+  <tr>
+    <td>G</td>
+    <td>Jumps to OP with number of current cell value, i.e. code xGxxw will write 10 on screen</td> 
+  </tr>
+  <tr>
+    <td>C</td>
+    <td>Copies current cell number to cell with number of previous cell value. Works with string cells as well as with int</td> 
+  </tr>
   
 </table>
 </pre>
