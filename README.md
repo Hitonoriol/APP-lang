@@ -108,6 +108,9 @@ Operators:
     <td>C</td>
     <td>Copies current cell number to cell with number of previous cell value. Works with string cells as well as with int</td> 
   </tr>
-  
+  <tr>
+    <td>@</td>
+    <td>Unar minus to current cell</td> 
+  </tr>
 </table>
 </pre>
