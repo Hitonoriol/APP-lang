@@ -223,11 +223,21 @@ void op(string arg)
 		}
 		else if (op == "v")
 		{
+			if (mode==0)
 			c[u] += 5;
+			else
+			c[u]-=5;
 		}
 		else if (op == "x")
 		{
+			if (mode==0)
 			c[u] += 10;
+			else
+			c[u] -= 10;
+		}
+		else if (op == "@")
+		{
+			c[u] *= -1;
 		}
 		else if (op == "i")
 		{
