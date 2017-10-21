@@ -351,10 +351,20 @@ void pxtc(string arg)
 	op(arg);
 }
 
-main()
+int main(int argc, char* argv[])
 {
 	string in;
-	echo("APP CONSOLE INTERPRETER \nType 'help' to see the list of avalaible commands");
+	if (argc == 1)
+		echo("APP CONSOLE INTERPRETER \nType 'help' to see the list of avalaible commands");
+	if (argc > 1)
+		{
+			string runc = string(argv[0]);
+			op(runc+".appl");
+			cout<<"\nEND OF PROGRAM\nQuit? (y/n): ";
+			if (gt() == "y"){
+				return 0;
+			}
+		}
 	while (true)
 	{
 		cout << endl << ">> ";
