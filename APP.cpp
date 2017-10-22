@@ -14,6 +14,8 @@ int ide = 0;
 int u = 0;
 int ech = 0;
 int mode = 0;
+bool translate = true;
+string translated = "";
 string cbuf;
 
 void op (string arg);
@@ -29,6 +31,9 @@ void reset(){
 		i++;
 	}
 	return;
+}
+void reinit(){
+	translated = "#include <iostream>\n#include <stdlib.h>\n#include <iomanip>\n#include <ctime>\n#include <cstring>\n#include <string>\n#include <sstream>\n#include <fstream>\n\nusing namespace std;\nint c[4096];\nstring sc[4096];\nint u = 0;\nint mode=0;\nstring gt(){string arg;getline(std::cin,arg);return arg;}void initRandom(){srand(time(NULL));}\nstring charc(char a){stringstream ss;string s;ss << a;ss >> s;return s;}int srnd(int first, int last){int val = first + rand() % last;return val;}\nmain(){\n";
 }
 string gt(){
 	string arg;
@@ -148,14 +153,32 @@ bool cmds(string arg){
 		return true;
 	}
 	if (arg=="help"){
-		cout<<"INTERPRETER COMMANDS:\n**********\nech - debug mode on/of\nrb - run commands from command buffer (last used)\nsave <filename> - save command buffer to file\nload <filename> - load file to command buffer\nrun <filename> - run file\ncls - clear screen\n\nDou you want to see operators list? (y/n): ";	
+		cout<<"INTERPRETER COMMANDS:\n**********\nech - debug mode on/of\nrb - run commands from command buffer (last used)\nsave <filename> - save command buffer to file\nload <filename> - load file to command buffer\nrun <filename> - run file\ncls - clear screen\ntranslate <filename> - translate current command buffer to C++ code\nDo you want to see operators list? (y/n): ";	
 		if (gt()=="y"){
 		cout<<"\n**********\nOPERATORS:\n**********\n";
 		cout<<"a\nSets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell\n\np\nIncrements current cell\n\nm\nDecrements current cell\n\nw\nWrites current int cell value if current mode is 0 and writes current string cell value if mode is 1\n\n_\nEchoes end of line\n\n>\nNext cell\n\n<\nPrevious cell\n\n.\nPuts a symbol with code from current int cell to current string cell\n\nv\nAdds 5 to current cell\n\nx\nAdds 10 to current cell\n\ni\nIf MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.\n\n+\nSets value of current cell to sum of two previous cells (cell[current] = cell[current-2] + cell[current-1])\n\n-\nSets value of current cell to cell[current-2] - cell[current-1]\n\n?\nIf cell[current-2] == cell[current-1], sets current cell to 1, otherwise, to 0.\n\n g\nIf cell[current-2] > cell[current-1], sets current cell to 1, otherwise, to 0.\n\n s\nIf cell[current-2] < cell[current-1], sets current cell to 1, otherwise, to 0.\n\n r\nSets current cell value to random int in range min = cell[current-2] & max = cell[current-1]\n\n{\nRepeats 1 operator after it cell[current-1] times\n\n!\nExecutes next operator if cell[current-1] == 1\n\nc\nPrints current cell number\n\nS\nSwitches MODE between 0 (int) and 1 (string)\n\n/\nMakes cell[current] = cell[current-2] / cell[current-1]\n\nR\nMakes cell[current] = cell[current-2] / cell[current-1]\n";
+		return true;
 	}
+}
+	if (arg=="translate"){
+		string fn = split(bufa," ",1);
+		fn+=".cpp";
+		reinit();
+		op(cbuf);
+		writeFile(fn,translated);
+		cout<<"\nTranslated your program (only last command buffer) to C++ to file "+fn;
+		return true;
 	}
 	return false;
-}
+	}
+	
+string sconv(int Number){ 
+	string Result; 
+	stringstream convert; 
+	convert << Number; 
+	Result = convert.str(); 
+	return Result; 
+} 
 void op(string arg)
 {
 	int echof = 0;
@@ -190,16 +213,24 @@ void op(string arg)
 			sc[u]+=op;
 			else{
 		if (op == "a"){
-			if (mode == 0)
+			if (translate) translated += "if (mode == 0){c[u] = 0;}else{sc[u] = \"\";}";
+			if (mode == 0){
 				c[u] = 0;
-			else
+			}
+			else{
 			sc[u] = "";
+			}
 		}
-		else if (op == "p")
+		else if (op == "p"){
+		if (translate) translated += "c[u]++;";
 			c[u]++;
-		else if (op == "m")
+		}
+		else if (op == "m"){
+		if (translate) translated += "c[u]--;";
 			c[u]--;
-		else if (op == "w")
+		}
+		else if (op == "w"){
+		if (translate) translated += "if (mode == 0){cout<<c[u];}else{cout<<sc[u];}";
 			if (mode == 0)
 			{
 				cout << c[u];
@@ -208,39 +239,55 @@ void op(string arg)
 			{
 				cout << sc[u];
 			}
-		else if (op == "_")
+		}
+		else if (op == "_"){
+		if (translate) translated += "cout<<endl;";
 			cout << endl;
-		else if (op == ">" && u < 255)
+		}
+		else if (op == ">" && u < 255){
+		if (translate) translated += "u++;";
 			u++;
-		else if (op == "<" && u > 0)
+		}
+		else if (op == "<" && u > 0){
+			if (translate) translated += "u--;";
 			u--;
+		}
 		else if (op == ".")
 		{
 			int aa = c[u];
 			char t = aa;
 			string a = charc(t);
 			sc[u]+=a;
+			if (translate) translated += "int aa = c[u];char t = aa;string a = charc(t);sc[u]+=a;";
 		}
 		else if (op == "v")
 		{
-			if (mode==0)
+			if (translate) translated += "if (mode==0){c[u] += 5;}else{c[u]-=5;}";
+			if (mode==0){
 			c[u] += 5;
-			else
+		}
+			else{
 			c[u]-=5;
+		}
 		}
 		else if (op == "x")
 		{
-			if (mode==0)
+			if (translate) translated += "if (mode==0){c[u] += 10;}else{c[u]-=10;}";
+			if (mode==0){
 			c[u] += 10;
-			else
+		}
+			else{
 			c[u] -= 10;
+		}
 		}
 		else if (op == "@")
 		{
 			c[u] *= -1;
+			if (translate) translated += "c[u] *= -1;";
 		}
 		else if (op == "i")
 		{
+			if (translate) translated += "if (mode == 0){cout << \"INPUT INT/CHAR: \";c[u]=iconv(gt());}else{cout << \"INPUT STRING: \";sc[u] = gt();}";
 			if (mode == 0)
 			{
 				cout << "INPUT INT/CHAR: ";
@@ -255,13 +302,16 @@ void op(string arg)
 		else if (op == "+")
 		{
 			c[u] = c[u - 2] + c[u - 1];
+			if (translate) translated += "c[u] = c[u - 2] + c[u - 1];";
 		}
 		else if (op == "-")
 		{
 			c[u] = c[u - 2] - c[u - 1];
+			if (translate) translated += "c[u] = c[u - 2] - c[u - 1];";
 		}
 		else if (op == "?")
 		{
+			if (translate) translated += "if (mode==0){if (c[u - 2] == c[u - 1]){c[u] = 1;}else{c[u] = 0;}else{if (sc[u - 2] == sc[u - 1]){c[u] = 1;}else{c[u] = 0;}}";
 			if (mode==0){
 			if (c[u - 2] == c[u - 1])
 			{
@@ -286,6 +336,7 @@ void op(string arg)
 		}
 		else if (op == "g")
 		{
+			if (translate) translated += "if (c[u - 2] > c[u - 1]){c[u] = 1;}else{c[u] = 0;}";
 			if (c[u - 2] > c[u - 1])
 			{
 				c[u] = 1;
@@ -297,6 +348,7 @@ void op(string arg)
 		}
 		else if (op == "s")
 		{
+			if (translate) translated += "if (c[u - 2] < c[u - 1]){c[u] = 1;}else{c[u] = 0;}";
 			if (c[u - 2] < c[u - 1])
 			{
 				c[u] = 1;
@@ -308,22 +360,29 @@ void op(string arg)
 		}
 		else if (op == "r")
 		{
+			if (translate) translated += "initRandom();c[u] = srnd(c[u - 2], c[u - 1]);";
 			initRandom();
 			c[u] = srnd(c[u - 2], c[u - 1]);
 		}
 		else if (op == "{")
 		{
+			string tmpbuf = cbuf;
+			if (translate) translated += "for (int i = 0; i < c[u-1]; ++i){";
 			int cc = 0;
 			string ao = arg.substr(i + 1, 1);
 			while (cc < c[u - 1])
 			{
 				pxtc(ao);
+				translate = false;
 				cc++;
 			}
 			i++;
+			translate = true;
+			cbuf = tmpbuf;
 		}
 		else if (op == "!")
 		{
+			if (translate) translated += "if (c[u - 1] == 1)";
 			if (c[u - 1] == 1)
 			{
 				pxtc(arg.substr(i + 1, 1));
@@ -332,10 +391,12 @@ void op(string arg)
 		}
 		else if (op == "c")
 		{
+			if (translate) translated += "cout<<u;";
 			cout << u;
 		}
 		else if (op == "C")
 		{
+			if (translate) translated += "if (mode==0)c[c[u-1]] = c[u];else sc[c[u-1]] = sc[u];";
 			if (mode==0)
 			c[c[u-1]] = c[u];
 			else
@@ -343,10 +404,12 @@ void op(string arg)
 		}
 		else if (op == "G")
 		{
+			if (translate) translated += "//goto";
 			i = c[u];
 		}
 		else if (op == "S")
 		{
+			if (translate) translated += "if (mode == 0)mode = 1;else mode = 0;";
 			if (mode == 0)
 				mode = 1;
 			else
@@ -356,12 +419,8 @@ void op(string arg)
 		}
 		else if (op == "/")
 		{
+			if (translate) translated += "c[u] = (c[u - 2] * 1.0) / (c[u - 1] * 1.0);";
 			c[u] = (c[u - 2] * 1.0) / (c[u - 1] * 1.0);
-		}
-		else if (op == "R")
-		{
-			sc[u] = arg.substr(i + 1, c[u - 1]);
-			i += c[u - 1];
 		}
 		else
 		{
@@ -370,8 +429,10 @@ void op(string arg)
 		}
 	}
 	}
+	translated+="\n";
 		i++;
 	}
+	if (translate) translated+="}";
 }
 catch (std::exception &e){
 	cout<<"AN ERROR HAS OCCURED\nRESET...";
