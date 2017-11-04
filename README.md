@@ -54,35 +54,35 @@ Operators:
   </tr>
   <tr>
     <td>+</td>
-    <td>Sets value of current cell to sum of two previous cells (cell[current] = cell[current-2] + cell[current-1])</td> 
+    <td>Sets value of current cell to sum of two previous cells (cell[current] = cell[DATA0] + cell[DATA1])</td> 
   </tr>
   <tr>
     <td>-</td>
-    <td>Sets value of current cell to cell[current-2] - cell[current-1]</td> 
+    <td>Sets value of current cell to cell[DATA0] - cell[DATA1]</td> 
   </tr>
   <tr>
     <td>?</td>
-    <td>If cell[current-2] == cell[current-1], sets current cell to 1, otherwise, to 0.</td> 
+    <td>If cell[DATA0] == cell[DATA1], sets current cell to 1, otherwise, to 0.</td> 
   </tr>
    <tr>
     <td>g</td>
-    <td>If cell[current-2] > cell[current-1], sets current cell to 1, otherwise, to 0.</td> 
+    <td>If cell[DATA0] > cell[DATA1], sets current cell to 1, otherwise, to 0.</td> 
   </tr>
    <tr>
     <td>s</td>
-    <td>If cell[current-2] < cell[current-1], sets current cell to 1, otherwise, to 0.</td> 
+    <td>If cell[DATA0] < cell[DATA1], sets current cell to 1, otherwise, to 0.</td> 
   </tr>
    <tr>
     <td>r</td>
-    <td>Sets current cell value to random int in range min = cell[current-2] & max = cell[current-1]</td> 
+    <td>Sets current cell value to random int in range min = cell[DATA0] & max = cell[DATA1]</td> 
   </tr>
   <tr>
     <td>{</td>
-    <td>Repeats 1 operator after it cell[current-1] times</td> 
+    <td>Repeats 1 operator after it cell[DATA0] times</td> 
   </tr>
   <tr>
     <td>!</td>
-    <td>Executes next operator if cell[current-1] == 1</td> 
+    <td>Executes next operator if cell[DATA0] == 1</td> 
   </tr>
   <tr>
     <td>c</td>
@@ -94,11 +94,11 @@ Operators:
   </tr>
   <tr>
     <td>/</td>
-    <td>Makes cell[current] = cell[current-2] / cell[current-1]</td> 
+    <td>Makes cell[current] = cell[DATA0] / cell[DATA1]</td> 
   </tr>
   <tr>
     <td>R</td>
-    <td>Makes cell[current] = cell[current-2] / cell[current-1]</td> 
+    <td>Makes cell[current] = cell[DATA0] / cell[DATA1]</td> 
   </tr>
   <tr>
     <td>G</td>
