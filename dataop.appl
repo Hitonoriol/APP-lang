@@ -1,0 +1,1 @@
+[jmp 100]S"Data operations example"w_S[jmp 0]i[ret][jmp 1]i[ret]Sa"Addition: "wS+w_Sa"Subtraction: "waS-w

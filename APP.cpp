@@ -6,14 +6,18 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <vector>
 #define BUFCAP 4096
+#define DATA0 0
+#define DATA1 1
 using namespace std;
 int c[BUFCAP];
 string sc[BUFCAP];
 int ide = 0;
-int u = 0;
+int u = 4;	//cells 0,1,2,3 are data registers
 int ech = 0;
 int mode = 0;
+int lp = 0;
 bool translate = true;
 string translated = "";
 string cbuf;
@@ -89,6 +93,20 @@ string readFile(string path){
         result += str;
     }
     return result;
+}
+vector<string> spl(string s, string delimiter){
+vector<string> ret;
+s += delimiter;
+size_t pos = 0;
+string token;
+int i = 0;
+while ((pos = s.find(delimiter)) != std::string::npos) {
+    token = s.substr(0, pos);
+    ret.push_back(token);
+    s.erase(0, pos + delimiter.length());
+    i++;
+}
+return ret;
 }
 
 string split(string s, string delimiter, int numr){
@@ -179,6 +197,12 @@ string sconv(int Number){
 	Result = convert.str(); 
 	return Result; 
 } 
+void smop(string arg){
+	vector<string> args = spl(arg," ");
+	string cmd = args[0];
+	if (cmd == "jmp") {lp = u; u = iconv(args[1]);}
+	if (cmd == "ret") {u = lp;}
+}
 void op(string arg)
 {
 	int echof = 0;
@@ -190,7 +214,9 @@ void op(string arg)
 	string op;
 	string scmd = "";
 	cbuf = arg;
+	string smbuf = "";
 	bool iscmd = false;
+	bool isms = false;
 	try{
 	while (i < nn){
 		op = arg.substr(i, 1);
@@ -198,13 +224,17 @@ void op(string arg)
 			if (iscmd) iscmd = false;
 			else iscmd = true;
 		}
+		if (op == "[")	isms = true;
+		if (op == "]") {isms = false;smop(smbuf);smbuf="";}
+		if (isms && op!="[" && op!="]") smbuf+=op;
 		if (!iscmd && scmd!=""){
 			cmds(scmd);
 			scmd = "";
 		}
 		if (iscmd && op!="\\"){
 			scmd+=op;
-		}else{
+		}
+		if (!iscmd && !isms){
 		if (op == "\"")
 			if (echof == 1)
 			echof = 0;
@@ -290,7 +320,7 @@ void op(string arg)
 			if (translate) translated += "if (mode == 0){cout << \"INPUT INT/CHAR: \";c[u]=iconv(gt());}else{cout << \"INPUT STRING: \";sc[u] = gt();}";
 			if (mode == 0)
 			{
-				cout << "INPUT INT/CHAR: ";
+				cout << "INPUT INT: ";
 				c[u]=iconv(gt());
 			}
 			else
@@ -301,19 +331,19 @@ void op(string arg)
 		}
 		else if (op == "+")
 		{
-			c[u] = c[u - 2] + c[u - 1];
-			if (translate) translated += "c[u] = c[u - 2] + c[u - 1];";
+			c[u] = c[DATA0] + c[DATA1];
+			if (translate) translated += "c[u] = c[0] + c[1];";
 		}
 		else if (op == "-")
 		{
-			c[u] = c[u - 2] - c[u - 1];
-			if (translate) translated += "c[u] = c[u - 2] - c[u - 1];";
+			c[u] = c[DATA0] - c[DATA1];
+			if (translate) translated += "c[u] = c[0] - c[1];";
 		}
 		else if (op == "?")
 		{
-			if (translate) translated += "if (mode==0){if (c[u - 2] == c[u - 1]){c[u] = 1;}else{c[u] = 0;}else{if (sc[u - 2] == sc[u - 1]){c[u] = 1;}else{c[u] = 0;}}";
+			if (translate) translated += "if (mode==0){if (c[0] == c[1]){c[u] = 1;}else{c[u] = 0;}else{if (sc[0] == sc[1]){c[u] = 1;}else{c[u] = 0;}}";
 			if (mode==0){
-			if (c[u - 2] == c[u - 1])
+			if (c[DATA0] == c[DATA1])
 			{
 				c[u] = 1;
 			}
@@ -324,7 +354,7 @@ void op(string arg)
 		}
 		else
 		{
-			if (sc[u - 2] == sc[u - 1])
+			if (sc[DATA0] == sc[DATA1])
 			{
 				c[u] = 1;
 			}
@@ -336,8 +366,8 @@ void op(string arg)
 		}
 		else if (op == "g")
 		{
-			if (translate) translated += "if (c[u - 2] > c[u - 1]){c[u] = 1;}else{c[u] = 0;}";
-			if (c[u - 2] > c[u - 1])
+			if (translate) translated += "if (c[DATA0] > c[DATA1]){c[u] = 1;}else{c[u] = 0;}";
+			if (c[DATA0] > c[DATA1])
 			{
 				c[u] = 1;
 			}
@@ -348,8 +378,8 @@ void op(string arg)
 		}
 		else if (op == "s")
 		{
-			if (translate) translated += "if (c[u - 2] < c[u - 1]){c[u] = 1;}else{c[u] = 0;}";
-			if (c[u - 2] < c[u - 1])
+			if (translate) translated += "if (c[DATA0] < c[DATA1]){c[u] = 1;}else{c[u] = 0;}";
+			if (c[DATA0] < c[DATA1])
 			{
 				c[u] = 1;
 			}
@@ -360,17 +390,17 @@ void op(string arg)
 		}
 		else if (op == "r")
 		{
-			if (translate) translated += "initRandom();c[u] = srnd(c[u - 2], c[u - 1]);";
+			if (translate) translated += "initRandom();c[u] = srnd(c[0], c[1]);";
 			initRandom();
-			c[u] = srnd(c[u - 2], c[u - 1]);
+			c[u] = srnd(c[DATA0], c[DATA1]);
 		}
 		else if (op == "{")
 		{
 			string tmpbuf = cbuf;
-			if (translate) translated += "for (int i = 0; i < c[u-1]; ++i){";
+			if (translate) translated += "for (int i = 0; i < c[DATA0]; ++i){";
 			int cc = 0;
 			string ao = arg.substr(i + 1, 1);
-			while (cc < c[u - 1])
+			while (cc < c[DATA0])
 			{
 				pxtc(ao);
 				translate = false;
@@ -382,8 +412,8 @@ void op(string arg)
 		}
 		else if (op == "!")
 		{
-			if (translate) translated += "if (c[u - 1] == 1)";
-			if (c[u - 1] == 1)
+			if (translate) translated += "if (c[DATA0] == 1)";
+			if (c[DATA0] == 1)
 			{
 				pxtc(arg.substr(i + 1, 1));
 			}
@@ -396,11 +426,11 @@ void op(string arg)
 		}
 		else if (op == "C")
 		{
-			if (translate) translated += "if (mode==0)c[c[u-1]] = c[u];else sc[c[u-1]] = sc[u];";
+			if (translate) translated += "if (mode==0)c[c[DATA0]] = c[u];else sc[c[DATA0]] = sc[u];";
 			if (mode==0)
-			c[c[u-1]] = c[u];
+			c[c[DATA0]] = c[u];
 			else
-			sc[c[u-1]] = sc[u];
+			sc[c[DATA0]] = sc[u];
 		}
 		else if (op == "G")
 		{
@@ -419,8 +449,8 @@ void op(string arg)
 		}
 		else if (op == "/")
 		{
-			if (translate) translated += "c[u] = (c[u - 2] * 1.0) / (c[u - 1] * 1.0);";
-			c[u] = (c[u - 2] * 1.0) / (c[u - 1] * 1.0);
+			if (translate) translated += "c[u] = (c[DATA0] * 1.0) / (c[DATA1] * 1.0);";
+			c[u] = (c[DATA0] * 1.0) / (c[DATA1] * 1.0);
 		}
 		else
 		{
