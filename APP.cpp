@@ -18,6 +18,7 @@ int u = 4;	//cells 0,1,2,3 are data registers
 int ech = 0;
 int mode = 0;
 int lp = 0;
+bool debugrun = false;
 bool translate = true;
 string translated = "";
 string cbuf;
@@ -37,7 +38,7 @@ void reset(){
 	return;
 }
 void reinit(){
-	translated = "#include <iostream>\n#include <stdlib.h>\n#include <iomanip>\n#include <ctime>\n#include <cstring>\n#include <string>\n#include <sstream>\n#include <fstream>\n\nusing namespace std;\nint c[4096];\nstring sc[4096];\nint u = 0;\nint mode=0;\nstring gt(){string arg;getline(std::cin,arg);return arg;}void initRandom(){srand(time(NULL));}\nstring charc(char a){stringstream ss;string s;ss << a;ss >> s;return s;}int srnd(int first, int last){int val = first + rand() % last;return val;}\nmain(){\n";
+	translated = "#DEFINE BUFCAP 4096\n#DEFINE DATA0 0\n#DEFINE DATA1 1\n#include <iostream>\n#include <stdlib.h>\n#include <iomanip>\n#include <ctime>\n#include <cstring>\n#include <string>\n#include <sstream>\n#include <fstream>\n\nusing namespace std;\nint lp;\nint c[4096];\nstring sc[4096];\nint u = 0;\nint mode=0;\nvoid reset(){mode = 0;ech=0;memset(c, 0, sizeof(c));u = 0;int i = 0;while (i<BUFCAP){sc[i]=\"\";i++;}return;\nstring gt(){string arg;getline(std::cin,arg);return arg;}void initRandom(){srand(time(NULL));}\nstring charc(char a){stringstream ss;string s;ss << a;ss >> s;return s;}int srnd(int first, int last){int val = first + rand() % last;return val;}\nmain(){\n";
 }
 string gt(){
 	string arg;
@@ -136,6 +137,7 @@ bool cmds(string arg){
 	arg = split(arg," ",0);
 	if (arg == "reset"){
 		reset();
+		translated+="reset();";
 		return true;
 	}
 	if (arg == "rb"){
@@ -144,6 +146,7 @@ bool cmds(string arg){
 	}
 	if (arg=="cls"){
 		system("cls");
+		translated+="system(\"cls\");";
 		return true;
 	}
 	if (arg=="ech"){
@@ -182,6 +185,7 @@ bool cmds(string arg){
 		string fn = split(bufa," ",1);
 		fn+=".cpp";
 		reinit();
+		debugrun = true;
 		op(cbuf);
 		writeFile(fn,translated);
 		cout<<"\nTranslated your program (only last command buffer) to C++ to file "+fn;
@@ -200,8 +204,8 @@ string sconv(int Number){
 void smop(string arg){
 	vector<string> args = spl(arg," ");
 	string cmd = args[0];
-	if (cmd == "jmp") {lp = u; u = iconv(args[1]);}
-	if (cmd == "ret") {u = lp;}
+	if (cmd == "jmp") {lp = u; u = iconv(args[1]);translated+="lp=u;u="+args[1]+";";}
+	if (cmd == "ret") {u = lp;translated+="u=lp;";}
 }
 void op(string arg)
 {
@@ -217,6 +221,7 @@ void op(string arg)
 	string smbuf = "";
 	bool iscmd = false;
 	bool isms = false;
+	translated+="\n\n/* TRANSLATED FROM APP To C++ */\n/* PROGRAM LISTING IN APP:"+arg+" */\n\n";
 	try{
 	while (i < nn){
 		op = arg.substr(i, 1);
@@ -236,11 +241,15 @@ void op(string arg)
 		}
 		if (!iscmd && !isms){
 		if (op == "\"")
-			if (echof == 1)
+			if (echof == 1){
+			translated+="\";\n";
 			echof = 0;
-			else echof = 1;
-			if (echof==1 && op!="\"")
+		}
+			else {echof = 1; translated+="sc[u]+=\"";}
+			if (echof==1 && op!="\""){
 			sc[u]+=op;
+			translated+=op;
+		}
 			else{
 		if (op == "a"){
 			if (translate) translated += "if (mode == 0){c[u] = 0;}else{sc[u] = \"\";}";
@@ -317,15 +326,17 @@ void op(string arg)
 		}
 		else if (op == "i")
 		{
-			if (translate) translated += "if (mode == 0){cout << \"INPUT INT/CHAR: \";c[u]=iconv(gt());}else{cout << \"INPUT STRING: \";sc[u] = gt();}";
+			if (translate) translated += "if (mode == 0){cout << \"INPUT INT: \";c[u]=iconv(gt());}else{cout << \"INPUT STRING: \";sc[u] = gt();}";
 			if (mode == 0)
 			{
 				cout << "INPUT INT: ";
+				if (!debugrun)
 				c[u]=iconv(gt());
 			}
 			else
 			{
 				cout << "INPUT STRING: ";
+				if (!debugrun)
 				sc[u] = gt();
 			}
 		}
@@ -459,10 +470,12 @@ void op(string arg)
 		}
 	}
 	}
+	if (echof==0 && !isms && !iscmd)
 	translated+="\n";
 		i++;
 	}
 	if (translate) translated+="}";
+	debugrun = false;
 }
 catch (std::exception &e){
 	cout<<"AN ERROR HAS OCCURED\nRESET...";
