@@ -10,18 +10,22 @@
 #define BUFCAP 4096
 #define DATA0 0
 #define DATA1 1
+#define DATA2 2
+#define DATA3 3
+#define DATA4 4
 using namespace std;
-int c[BUFCAP];
-string sc[BUFCAP];
-int ide = 0;
-int u = 4;	//cells 0,1,2,3 are data registers
-int ech = 0;
-int mode = 0;
-int lp = 0;
-bool debugrun = false;
-bool translate = true;
-string translated = "";
-string cbuf;
+int i = 0;	//global execution iterator
+string in;	//input buffer
+int c[BUFCAP];	//int cells
+string sc[BUFCAP];	//string cells
+int u = 4;	//DATA0 and DATA1 are data registers || DATA2 is a logical cell (0/1) || DATA3 is a cycle cell || DATA4 is a pointer cell
+int ech = 0; //debug mode
+int mode = 0; //string/int mode
+int lp = 0;	//pointer for JMP and RET
+bool debugrun = false;	//flag to silence output when saving/translating
+bool translate = true;	//translate flag
+string translated = "";	//translated code buffer
+string cbuf;	//APP code buffer
 
 void op (string arg);
 void pxtc(string arg);
@@ -38,7 +42,7 @@ void reset(){
 	return;
 }
 void reinit(){
-	translated = "#DEFINE BUFCAP 4096\n#DEFINE DATA0 0\n#DEFINE DATA1 1\n#include <iostream>\n#include <stdlib.h>\n#include <iomanip>\n#include <ctime>\n#include <cstring>\n#include <string>\n#include <sstream>\n#include <fstream>\n\nusing namespace std;\nint lp;\nint c[4096];\nstring sc[4096];\nint u = 0;\nint mode=0;\nvoid reset(){mode = 0;ech=0;memset(c, 0, sizeof(c));u = 0;int i = 0;while (i<BUFCAP){sc[i]=\"\";i++;}return;\nstring gt(){string arg;getline(std::cin,arg);return arg;}void initRandom(){srand(time(NULL));}\nstring charc(char a){stringstream ss;string s;ss << a;ss >> s;return s;}int srnd(int first, int last){int val = first + rand() % last;return val;}\nmain(){\n";
+	translated = "#define DATA2 2\n#define DATA3 3\n#define DATA4 4\n#DEFINE BUFCAP 4096\n#DEFINE DATA0 0\n#DEFINE DATA1 1\n#include <iostream>\n#include <stdlib.h>\n#include <iomanip>\n#include <ctime>\n#include <cstring>\n#include <string>\n#include <sstream>\n#include <fstream>\n\nusing namespace std;\nint lp;\nint c[4096];\nstring sc[4096];\nint u = 0;\nint mode=0;\nvoid reset(){mode = 0;ech=0;memset(c, 0, sizeof(c));u = 0;int i = 0;while (i<BUFCAP){sc[i]=\"\";i++;}return;\nstring gt(){string arg;getline(std::cin,arg);return arg;}void initRandom(){srand(time(NULL));}\nstring charc(char a){stringstream ss;string s;ss << a;ss >> s;return s;}int srnd(int first, int last){int val = first + rand() % last;return val;}\nmain(){\n";
 }
 string gt(){
 	string arg;
@@ -202,15 +206,19 @@ string sconv(int Number){
 	return Result; 
 } 
 void smop(string arg){
+    if (arg.find(" ")!=-1){
 	vector<string> args = spl(arg," ");
 	string cmd = args[0];
 	if (cmd == "jmp") {lp = u; u = iconv(args[1]);translated+="lp=u;u="+args[1]+";";}
 	if (cmd == "ret") {u = lp;translated+="u=lp;";}
+	if (cmd == "go") {i = cbuf.find(args[1]); translated+="goto "+args[1].substr(1)+";";}
+    }
+    if (arg.substr(0,1)==":") {translated+=arg.substr(1)+":";}
 }
 void op(string arg)
 {
 	int echof = 0;
-	int i = 0;
+	i=0;
 	int nn = 0;
 	if (cmds(arg))
 	return;
@@ -283,7 +291,7 @@ void op(string arg)
 		if (translate) translated += "cout<<endl;";
 			cout << endl;
 		}
-		else if (op == ">" && u < 255){
+		else if (op == ">" && u < BUFCAP){
 		if (translate) translated += "u++;";
 			u++;
 		}
@@ -326,16 +334,14 @@ void op(string arg)
 		}
 		else if (op == "i")
 		{
-			if (translate) translated += "if (mode == 0){cout << \"INPUT INT: \";c[u]=iconv(gt());}else{cout << \"INPUT STRING: \";sc[u] = gt();}";
+			if (translate) translated += "if (mode == 0){c[u]=iconv(gt());}else{sc[u] = gt();}";
 			if (mode == 0)
 			{
-				cout << "INPUT INT: ";
 				if (!debugrun)
 				c[u]=iconv(gt());
 			}
 			else
 			{
-				cout << "INPUT STRING: ";
 				if (!debugrun)
 				sc[u] = gt();
 			}
@@ -352,51 +358,51 @@ void op(string arg)
 		}
 		else if (op == "?")
 		{
-			if (translate) translated += "if (mode==0){if (c[0] == c[1]){c[u] = 1;}else{c[u] = 0;}else{if (sc[0] == sc[1]){c[u] = 1;}else{c[u] = 0;}}";
+			if (translate) translated += "if (mode==0){if (c[0] == c[1]){c[DATA2] = 1;}else{c[DATA2] = 0;}else{if (sc[0] == sc[1]){c[DATA2] = 1;}else{c[DATA2] = 0;}}";
 			if (mode==0){
 			if (c[DATA0] == c[DATA1])
 			{
-				c[u] = 1;
+				c[DATA2] = 1;
 			}
 			else
 			{
-				c[u] = 0;
+				c[DATA2] = 0;
 			}
 		}
 		else
 		{
 			if (sc[DATA0] == sc[DATA1])
 			{
-				c[u] = 1;
+				c[DATA2] = 1;
 			}
 			else
 			{
-				c[u] = 0;
+				c[DATA2] = 0;
 			}
 		}
 		}
 		else if (op == "g")
 		{
-			if (translate) translated += "if (c[DATA0] > c[DATA1]){c[u] = 1;}else{c[u] = 0;}";
+			if (translate) translated += "if (c[DATA0] > c[DATA1]){c[DATA2] = 1;}else{c[DATA2] = 0;}";
 			if (c[DATA0] > c[DATA1])
 			{
-				c[u] = 1;
+				c[DATA2] = 1;
 			}
 			else
 			{
-				c[u] = 0;
+				c[DATA2] = 0;
 			}
 		}
 		else if (op == "s")
 		{
-			if (translate) translated += "if (c[DATA0] < c[DATA1]){c[u] = 1;}else{c[u] = 0;}";
+			if (translate) translated += "if (c[DATA0] < c[DATA1]){c[DATA2] = 1;}else{c[DATA2] = 0;}";
 			if (c[DATA0] < c[DATA1])
 			{
-				c[u] = 1;
+				c[DATA2] = 1;
 			}
 			else
 			{
-				c[u] = 0;
+				c[DATA2] = 0;
 			}
 		}
 		else if (op == "r")
@@ -408,10 +414,10 @@ void op(string arg)
 		else if (op == "{")
 		{
 			string tmpbuf = cbuf;
-			if (translate) translated += "for (int i = 0; i < c[DATA0]; ++i){";
+			if (translate) translated += "for (int i = 0; i < c[DATA3]; ++i){";
 			int cc = 0;
 			string ao = arg.substr(i + 1, 1);
-			while (cc < c[DATA0])
+			while (cc < c[DATA3])
 			{
 				pxtc(ao);
 				translate = false;
@@ -423,8 +429,8 @@ void op(string arg)
 		}
 		else if (op == "!")
 		{
-			if (translate) translated += "if (c[DATA0] == 1)";
-			if (c[DATA0] == 1)
+			if (translate) translated += "if (c[DATA2] == 1)";
+			if (c[DATA2] == 1)
 			{
 				pxtc(arg.substr(i + 1, 1));
 			}
@@ -446,7 +452,7 @@ void op(string arg)
 		else if (op == "G")
 		{
 			if (translate) translated += "//goto";
-			i = c[u];
+			i = c[DATA4];
 		}
 		else if (op == "S")
 		{
@@ -491,7 +497,7 @@ void pxtc(string arg)
 
 int main(int argc, char* argv[])
 {
-	string in;
+
 	if (argc == 1)
 		echo("APP CONSOLE INTERPRETER \nType 'help' to see the list of avalaible commands");
 	if (argc > 1)
