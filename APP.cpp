@@ -181,7 +181,7 @@ bool cmds(string arg){
 		cout<<"INTERPRETER COMMANDS:\n**********\nech - debug mode on/of\nrb - run commands from command buffer (last used)\nsave <filename> - save command buffer to file\nload <filename> - load file to command buffer\nrun <filename> - run file\ncls - clear screen\ntranslate <filename> - translate current command buffer to C++ code\nDo you want to see operators list? (y/n): ";	
 		if (gt()=="y"){
 		cout<<"\n**********\nOPERATORS:\n**********\n";
-		cout<<"a\nSets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell\n\np\nIncrements current cell\n\nm\nDecrements current cell\n\nw\nWrites current int cell value if current mode is 0 and writes current string cell value if mode is 1\n\n_\nEchoes end of line\n\n>\nNext cell\n\n<\nPrevious cell\n\n.\nPuts a symbol with code from current int cell to current string cell\n\nv\nAdds 5 to current cell\n\nx\nAdds 10 to current cell\n\ni\nIf MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.\n\n+\nSets value of current cell to sum of two previous cells (cell[current] = cell[current-2] + cell[current-1])\n\n-\nSets value of current cell to cell[current-2] - cell[current-1]\n\n?\nIf cell[current-2] == cell[current-1], sets current cell to 1, otherwise, to 0.\n\n g\nIf cell[current-2] > cell[current-1], sets current cell to 1, otherwise, to 0.\n\n s\nIf cell[current-2] < cell[current-1], sets current cell to 1, otherwise, to 0.\n\n r\nSets current cell value to random int in range min = cell[current-2] & max = cell[current-1]\n\n{\nRepeats 1 operator after it cell[current-1] times\n\n!\nExecutes next operator if cell[current-1] == 1\n\nc\nPrints current cell number\n\nS\nSwitches MODE between 0 (int) and 1 (string)\n\n/\nMakes cell[current] = cell[current-2] / cell[current-1]\n\nR\nMakes cell[current] = cell[current-2] / cell[current-1]\n";
+		cout<<"a\nSets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell\n\np\nIncrements current cell\n\nm\nDecrements current cell\n\nw\nWrites current int cell value if current mode is 0 and writes current string cell value if mode is 1\n\n_\nEchoes end of line\n\n>\nNext cell\n\n<\nPrevious cell\n\n.\nPuts a symbol with code from current int cell to current string cell\n\nv\nAdds 5 to current cell\n\nx\nAdds 10 to current cell\n\ni\nIf MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.\n\n+\nSets value of current cell to sum of two previous cells (cell[current] = cell[DATA0] + cell[DATA1])\n\n-\nSets value of current cell to cell[DATA0] - cell[DATA1]\n\n?\nIf cell[DATA0] == cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n g\nIf cell[DATA0] > cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n s\nIf cell[DATA0] < cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n r\nSets current cell value to random int in range min = cell[DATA0] & max = cell[DATA1]\n\n{\nRepeats 1 operator after it cell[DATA3] times\n\n!\nExecutes next operator if cell[DATA1] == 1\n\nc\nPrints current cell number\n\nS\nSwitches MODE between 0 (int) and 1 (string)\n\n/\nMakes cell[current] = cell[DATA0] / cell[DATA1]\n\nG\nJumps to op #CELL[DATA4]\n";
 		return true;
 	}
 }
@@ -499,7 +499,7 @@ int main(int argc, char* argv[])
 {
 
 	if (argc == 1)
-		echo("APP CONSOLE INTERPRETER \nType 'help' to see the list of avalaible commands");
+		echo("APP CONSOLE INTERPRETER \nType \"help\" to see the list of avalaible commands");
 	if (argc > 1)
 		{
 			string runc = string(argv[0]);
