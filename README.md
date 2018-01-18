@@ -22,11 +22,11 @@ Operators:
   </tr>
   <tr>
     <td>w</td>
-    <td>Writes current int cell value if current mode is 0 and writes current string cell value if mode is 1</td> 
+    <td>Writes current number cell value with float-point precision from DATA5 cell (3 by default) if current mode is 0 and writes current string cell value if mode is 1</td> 
   </tr>
   <tr>
     <td>_</td>
-    <td>Echoes end of line</td> 
+    <td>Console line break</td> 
   </tr>
   <tr>
     <td>&gt;</td>
@@ -50,11 +50,11 @@ Operators:
   </tr>
   <tr>
     <td>i</td>
-    <td>If MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.</td> 
+    <td>If MODE is 0, gets int(!) from keyboard to number cell, if MODE is 1, gets string from keyboard.</td> 
   </tr>
   <tr>
     <td>+</td>
-    <td>Sets value of current cell to sum of two previous cells (cell[current] = cell[DATA0] + cell[DATA1])</td> 
+    <td>Sets value of current cell to cell[DATA0] + cell[DATA1]</td> 
   </tr>
   <tr>
     <td>-</td>
@@ -62,15 +62,15 @@ Operators:
   </tr>
   <tr>
     <td>?</td>
-    <td>If cell[DATA0] == cell[DATA1], sets current cell to 1, otherwise, to 0.</td> 
+    <td>If cell[DATA0] == cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.</td> 
   </tr>
    <tr>
     <td>g</td>
-    <td>If cell[DATA0] > cell[DATA1], sets current cell to 1, otherwise, to 0.</td> 
+    <td>If cell[DATA0] > cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.</td> 
   </tr>
    <tr>
     <td>s</td>
-    <td>If cell[DATA0] < cell[DATA1], sets current cell to 1, otherwise, to 0.</td> 
+    <td>If cell[DATA0] < cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.</td> 
   </tr>
    <tr>
     <td>r</td>
@@ -78,11 +78,11 @@ Operators:
   </tr>
   <tr>
     <td>{</td>
-    <td>Repeats 1 operator after it cell[DATA0] times</td> 
+    <td>Repeats 1 operator after it cell[DATA3] times</td> 
   </tr>
   <tr>
     <td>!</td>
-    <td>Executes next operator if cell[DATA0] == 1</td> 
+    <td>Executes next operator if cell[DATA2] == 1</td> 
   </tr>
   <tr>
     <td>c</td>
@@ -90,7 +90,7 @@ Operators:
   </tr>
   <tr>
     <td>S</td>
-    <td>Switches MODE between 0 (int) and 1 (string)</td> 
+    <td>Switches MODE between 0 (numbers) and 1 (string)</td> 
   </tr>
   <tr>
     <td>/</td>
