@@ -101,8 +101,12 @@ Operators:
     <td>Makes cell[current] = cell[DATA0] / cell[DATA1]</td> 
   </tr>
   <tr>
-    <td>G</td>
-    <td>Jumps to OP with number of current cell value, i.e. code xGxxw will write 10 on screen</td> 
+    <td>j</td>
+    <td>Jumps to memory cell which number is stored in DATA4 cell. Default DATA4 value is its own number, so to set cell number to jump you have to do something like that: "jxjR" - this code will make APP jump to 10th memory cell and then back to DATA4</td> 
+  </tr>
+<tr>
+    <td>R</td>
+    <td>Returns to previous cell (works only after "j")</td> 
   </tr>
   <tr>
     <td>C</td>
@@ -111,6 +115,14 @@ Operators:
   <tr>
     <td>@</td>
     <td>Unar minus to current cell</td> 
+  </tr>
+<tr>
+    <td>[:label]</td>
+    <td>Declare a label (any name except ([,],/,\,") )</td> 
+  </tr>
+<tr>
+    <td>[#label]</td>
+    <td>Go to label. Don't write ":" here. Just don't.</td> 
   </tr>
 </table>
 </pre>
