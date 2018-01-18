@@ -2,7 +2,7 @@
 <h3>One-symbol esoteric programming language interpreter</h3>
 Operators:
 <pre>
-<table>
+<table style="table-layout: fixed; width: 100%;word-wrap: normal;">
   <tr>
     <th>Operator</th>
     <th>Description</th> 
