@@ -77,8 +77,8 @@ Operators:
     <td>Sets current cell value to random int in range min = cell[DATA0] & max = cell[DATA1]</td> 
   </tr>
   <tr>
-    <td>{</td>
-    <td>Repeats 1 operator after it cell[DATA3] times</td> 
+    <td>{...}</td>
+    <td>Repeats operators between "{" and "}" cell[DATA3] times</td> 
   </tr>
   <tr>
     <td>!</td>
@@ -123,6 +123,10 @@ Operators:
 <tr>
     <td>[#label]</td>
     <td>Go to label. Don't write ":" here. Just don't.</td> 
+  </tr>
+  <tr>
+    <td>[!12345]</td>
+    <td>Sets current cell to a value</td> 
   </tr>
 </table>
 </pre>
