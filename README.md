@@ -81,7 +81,7 @@ Operators:
     <td>Repeats operators between "{" and "}" cell[DATA3] times</td> 
   </tr>
   <tr>
-    <td>!</td>
+    <td>!...;</td>
     <td>Executes next operator if cell[DATA2] == 1</td> 
   </tr>
   <tr>
@@ -128,5 +128,10 @@ Operators:
     <td>[!12345]</td>
     <td>Sets current cell to a value</td> 
   </tr>
+  <tr>
+    <td>[>5]</td>
+    <td>Jumps to a memory cell</td> 
+  </tr>
+  
 </table>
 </pre>
