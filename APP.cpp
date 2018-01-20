@@ -219,6 +219,8 @@ void smop(string arg){
 	string cmd = arg;
 	if (ni=="#") {i = cbuf.find(":"+arg.substr(1))+arg.substr(1).length();translated+="goto "+arg.substr(1)+";";}
     if (ni==":") {translated+=arg.substr(1)+":";}
+    if (ni==">") {u=iconv(arg.substr(1));}
+    if (ni=="!") {c[u]=iconv(arg.substr(1));translated+="c[u]="+arg.substr(1)+";";}
     if (ni=="s") {u=DATA4;}
 }
 void op(string arg)
@@ -432,28 +434,55 @@ void op(string arg)
 		}
 		else if (op == "{")
 		{
+			ide = true;
+			int lastpos = i;
 			string tmpbuf = cbuf;
 			if (translate) translated += "for (int i = 0; i < c[DATA3]; ++i){";
-			int cc = 0;
-			string ao = arg.substr(i + 1, 1);
-			while (cc < c[DATA3])
+			int cc = 0,kk=0;
+			string ao;
+			cc=i;
+			while(arg.substr(cc,1)!="}"){kk++;cc++;}
+			cc--;
+			int fw = kk,inner = 1;
+			int oo = ::i;
+			cc=0;
+			while (cc < (int)c[DATA3])
 			{
+			if (cc>=(int)c[DATA3]) break;
+				while(inner<fw){
+				ao = arg.substr(oo + inner, 1);
 				pxtc(ao);
 				translate = false;
-				cc++;
+				inner++;
 			}
-			i++;
+				inner = 1;
+				cc++;
+				
+			}
+			i=lastpos+fw;
 			translate = true;
 			cbuf = tmpbuf;
+			ide = false;
 		}
 		else if (op == "!")
 		{
-			if (translate) translated += "if (c[DATA2] == 1)";
+			ide = true;
+		int fw;
+			if (translate) translated += "if (c[DATA2] == 1){";
 			if (c[DATA2] == 1)
 			{
-				pxtc(arg.substr(i + 1, 1));
+			int cc = 0;
+			while(arg.substr(cc,1)!=";") cc++;
+			cc--;
+			fw = cc;
+			int inner = 1;
+			while(inner<=cc){
+				pxtc(arg.substr(i + inner, 1));
+				inner++;
 			}
-			i++;
+			}
+			i+=fw;
+			ide=false;
 		}
 		else if (op == "c")
 		{
@@ -499,7 +528,8 @@ void op(string arg)
 	debugrun = false;
 }
 catch (std::exception &e){
-	cout<<"AN ERROR HAS OCCURED\nRESET...";
+	cout<<"AN ERROR HAS OCCURED\n"<<e.what()<<"\nRESET...";
+	
 	reset();
 	return;
 }
