@@ -14,13 +14,14 @@
 #define DATA3 3
 #define DATA4 4
 #define DATA5 5
-#define STARTPOINT 6
+#define DATA6 6
+#define STARTPOINT 7
 using namespace std;
 int i = 0;	//global execution iterator
 string in;	//input buffer
 double c[BUFCAP];	//double cells
 string sc[BUFCAP];	//string cells
-int u = STARTPOINT;	//DATA0 and DATA1 are data registers || DATA2 is a logical cell (0/1) || DATA3 is a cycle cell || DATA4 is a JMP pointer cell || DATA5 is a floating point precision cell
+int u = STARTPOINT;	//DATA0 and DATA1 are data registers || DATA2 is a logical cell (0/1) || DATA3 is a cycle cell || DATA4 is a JMP pointer cell || DATA5 is a floating point precision cell || DATA6 is a copy buffer
 int ech = 0; //debug mode
 bool ide = false;	//flag to switch between interactive mode and one-line exec
 int mode = 0; //string/int mode
@@ -47,7 +48,7 @@ void reset(){
 	return;
 }
 void reinit(){
-	translated = "#define DATA2 2\n#define DATA3 3\n#define DATA4 4\n#DEFINE BUFCAP 4096\n#DEFINE DATA0 0\n#DEFINE DATA1 1\n#include <iostream>\n#include <stdlib.h>\n#include <iomanip>\n#include <ctime>\n#include <cstring>\n#include <string>\n#include <sstream>\n#include <fstream>\n\nusing namespace std;\nint lp;\nint c[4096];\nstring sc[4096];\nint u = 0;\nint mode=0;\nvoid reset(){mode = 0;ech=0;memset(c, 0, sizeof(c));u = 0;int i = 0;while (i<BUFCAP){sc[i]=\"\";i++;}return;\nstring gt(){string arg;getline(std::cin,arg);return arg;}void initRandom(){srand(time(NULL));}\nstring charc(char a){stringstream ss;string s;ss << a;ss >> s;return s;}int srnd(int first, int last){int val = first + rand() % last;return val;}\nmain(){\n";
+	translated = "#define DATA6 6\n#define DATA5 5\n#define DATA2 2\n#define DATA3 3\n#define DATA4 4\n#DEFINE BUFCAP 4096\n#DEFINE DATA0 0\n#DEFINE DATA1 1\n#include <iostream>\n#include <stdlib.h>\n#include <iomanip>\n#include <ctime>\n#include <cstring>\n#include <string>\n#include <sstream>\n#include <fstream>\n\nusing namespace std;\nint lp;\nint c[4096];\nbool debugrun = false;\nstring sc[4096];\nint u = 0;\nint mode=0;\nvoid reset(){mode = 0;ech=0;memset(c, 0, sizeof(c));u = 0;int i = 0;while (i<BUFCAP){sc[i]=\"\";i++;}return;\nstring gt(){string arg;getline(std::cin,arg);return arg;}void initRandom(){srand(time(NULL));}\nstring charc(char a){stringstream ss;string s;ss << a;ss >> s;return s;}int srnd(int first, int last){int val = first + rand() % last;return val;}\nbool writeFile(string filename, string arg){ofstream fout(filename.c_str());fout << arg;fout.close();return true;}string readFile(string path){ifstream input(path.c_str());string str, result;while(std::getline(input, str)) {result += str;}return result;\nmain(){\n";
 }
 string gt(){
 	string arg;
@@ -187,10 +188,10 @@ bool cmds(string arg){
 		return true;
 	}
 	if (arg=="help"){
-		cout<<"INTERPRETER COMMANDS:\n**********\nech - debug mode on/of\nrb - run commands from command buffer (last used)\nsave <filename> - save command buffer to file\nload <filename> - load file to command buffer\nrun <filename> - run file\ncls - clear screen\ntranslate <filename> - translate current command buffer to C++ code\nrunmode - toggle one-line and interactive mode (one-line by default)\nDo you want to see operators list? (y/n): ";	
+		cout<<"INTERPRETER COMMANDS:\n**********\nech - debug mode on/of\nrb - run commands from command buffer (last used)\nsave <filename> - save command buffer to file\nload <filename> - load file to command buffer\nrun <filename> - run file\ncls - clear screen\ntranslate <filename> - translate current command buffer to C++ code\nrunmode - toggle one-line and interactive mode (one-line by default)\n\nDo you want to see operators list? (y/n): ";	
 		if (gt()=="y"){
 		cout<<"\n**********\nOPERATORS:\n**********\n";
-		cout<<"a\nSets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell\n\np\nIncrements current cell\n\nm\nDecrements current cell\n\nw\nWrites current int cell value if current mode is 0 and writes current string cell value if mode is 1\n\n_\nEchoes end of line\n\n>\nNext cell\n\n<\nPrevious cell\n\n.\nPuts a symbol with code from current int cell to current string cell\n\nv\nAdds 5 to current cell\n\nx\nAdds 10 to current cell\n\ni\nIf MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.\n\n+\nSets value of current cell to sum of two previous cells (cell[current] = cell[DATA0] + cell[DATA1])\n\n-\nSets value of current cell to cell[DATA0] - cell[DATA1]\n\n?\nIf cell[DATA0] == cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n g\nIf cell[DATA0] > cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n s\nIf cell[DATA0] < cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n r\nSets current cell value to random int in range min = cell[DATA0] & max = cell[DATA1]\n\n{\nRepeats 1 operator after it cell[DATA3] times\n\n!\nExecutes next operator if cell[DATA1] == 1\n\nc\nPrints current cell number\n\nS\nSwitches MODE between 0 (int) and 1 (string)\n\n/\nMakes cell[current] = cell[DATA0] / cell[DATA1]\n\nj\nJumps to #CELL[DATA4]; first jmp is always to DATA4 cell\n\nR\nReturns to previous memory cell\n\n[:labelname]\nCreates label\n\n[#label]\nGo to label\n\n[s]\nJumps to DATA4 cell";
+		cout<<"Mappings:\n0, 1 - Data cells\n2 - logical cell (0/1)\n3 - cycle cell\n4 - jmp pointer cell\n5 - floating point precision cell\n6 - copy buffer\n\nOperators:\na\nSets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell\n\np\nIncrements current cell\n\nm\nDecrements current cell\n\nw\nWrites current int cell value if current mode is 0 and writes current string cell value if mode is 1\n\n_\nEchoes end of line\n\n>\nNext cell\n\n<\nPrevious cell\n\n.\nPuts a symbol with code from current int cell to current string cell\n\nv\nAdds 5 to current cell\n\nx\nAdds 10 to current cell\n\ni\nIf MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.\n\n+\nIf MODE is 0, sets value of current cell to sum of DATA0 and DATA1 cells (cell[current] = cell[DATA0] + cell[DATA1]), otherwise, joins two strings from DATA0 and DATA1 string cells to current string cell\n\n-\nSets value of current cell to cell[DATA0] - cell[DATA1]\n\n?\nIf cell[DATA0] == cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n g\nIf cell[DATA0] > cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n s\nIf cell[DATA0] < cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n r\nSets current cell value to random int in range min = cell[DATA0] & max = cell[DATA1]\n\n{...}\nRepeats operators inside of it (0 to cell[DATA3] times)\n\n!...;\nExecutes operators inside of it if cell[DATA2] == 1\n\nc\nPrints current cell number\n\nS\nSwitches MODE between 0 (int) and 1 (string)\n\n/\nMakes cell[current] = cell[DATA0] / cell[DATA1]\n\nj\nJumps to #CELL[DATA4]; first jmp is always to DATA4 cell\n\nR\nReturns to previous memory cell\n\nP\nPuts current string cell value to file with name from string cell DATA0\n\nl\nLoads string from file with name from string cell DATA0 to current string cell/n/n&\nIf MODE is 0, appends current number cell to string cell, otherwise, converts value from current string cell to current number cell\n\n[:labelname]\nCreates label\n\n[#label]\nGo to label\n\n[s]\nJumps to DATA4 cell\n\n[!123]\nSet current cell to value\n\n[>5]\nJumps to cell";
 		return true;
 	}
 }
@@ -220,7 +221,7 @@ void smop(string arg){
 	if (ni=="#") {i = cbuf.find(":"+arg.substr(1))+arg.substr(1).length();translated+="goto "+arg.substr(1)+";";}
     if (ni==":") {translated+=arg.substr(1)+":";}
     if (ni==">") {u=iconv(arg.substr(1));}
-    if (ni=="!") {c[u]=iconv(arg.substr(1));translated+="c[u]="+arg.substr(1)+";";}
+    if (ni=="!") {c[u]=stod(arg.substr(1));translated+="c[u]="+arg.substr(1)+";";}
     if (ni=="s") {u=DATA4;}
 }
 void op(string arg)
@@ -352,13 +353,13 @@ void op(string arg)
 		}
 		else if (op == "i")
 		{
-			if (translate) translated += "if (mode == 0){c[u]=iconv(gt());}else{sc[u] = gt();}";
+		if (translate) translated += "if (mode == 0){if (!debugrun){string t;getline(std::cin,t);c[u] = stod(t);}}else{if (!debugrun)sc[u] = gt();}";
 			if (mode == 0)
 			{
 				if (!debugrun){
 				string t;
 				getline(std::cin,t);
-				c[u] = iconv(t);
+				c[u] = stod(t);
 			}
 			}
 			else
@@ -369,8 +370,11 @@ void op(string arg)
 		}
 		else if (op == "+")
 		{
+			if (mode==0)
 			c[u] = c[DATA0] + c[DATA1];
-			if (translate) translated += "c[u] = c[0] + c[1];";
+			else
+			sc[u] = sc[DATA0] + sc[DATA1];
+			if (translate) translated += "if (mode==0) c[u] = c[DATA0] + c[DATA1]; else sc[u] = sc[DATA0] + sc[DATA1];";
 		}
 		else if (op == "-")
 		{
@@ -432,6 +436,7 @@ void op(string arg)
 			initRandom();
 			c[u] = srnd(c[DATA0], c[DATA1]);
 		}
+		else if (op == "}" || op == ";") translated+="}";
 		else if (op == "{")
 		{
 			ide = true;
@@ -491,11 +496,11 @@ void op(string arg)
 		}
 		else if (op == "C")
 		{
-			if (translate) translated += "if (mode==0)c[c[DATA0]] = c[u];else sc[c[DATA0]] = sc[u];";
+			if (translate) translated += "if (mode==0)c[c[DATA6]] = c[u];else sc[c[DATA6]] = sc[u];";
 			if (mode==0)
-			c[(int)c[DATA0]] = c[u];
+			c[(int)c[DATA6]] = c[u];
 			else
-			sc[(int)c[DATA0]] = sc[u];
+			sc[(int)c[DATA6]] = sc[u];
 		}
 		else if (op == "S")
 		{
@@ -511,6 +516,19 @@ void op(string arg)
 		{
 			if (translate) translated += "c[u] = (c[DATA0]) / (c[DATA1]);";
 			c[u] = (c[DATA0]) / (c[DATA1]);
+		}
+		else if (op == "&"){
+			translated+="if (mode==0) sc[u] += to_string(c[u]); else c[u] = stod(sc[u]);";
+			if (mode==0) sc[u] += to_string(c[u]);
+			else c[u] = stod(sc[u]);
+		}
+		else if(op == "P"){
+			translated+="writeFile(sc[DATA0],sc[u]);";
+			writeFile(sc[DATA0],sc[u]);
+		}
+		else if(op == "l"){
+			translated+="sc[u] = readFile(sc[DATA0]);";
+			sc[u] = readFile(sc[DATA0]);
 		}
 		else
 		{
@@ -548,9 +566,9 @@ int main(int argc, char* argv[])
 		cout<<"APP CONSOLE INTERPRETER || STARTPOINT: "<<STARTPOINT<<"\nType \"help\" to see the list of avalaible commands\n";
 	if (argc > 1)
 		{
-			string runc = string(argv[0]);
-			op(runc);
-			cout<<"\nEND OF PROGRAM\nQuit? (y/n): ";
+			string runc = string(argv[1]);
+			op(readFile(runc));
+			cout<<"\n\nEnd of program. Quit? (y/n): ";
 			if (gt() == "y"){
 				return 0;
 			}
