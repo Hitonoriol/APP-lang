@@ -54,7 +54,7 @@ Operators:
   </tr>
   <tr>
     <td>+</td>
-    <td>Sets value of current cell to cell[DATA0] + cell[DATA1]</td> 
+    <td>if MODE is 0, sets value of current cell to cell[DATA0] + cell[DATA1], otherwise, joins DATA0 and DATA1 strings to current cell string</td> 
   </tr>
   <tr>
     <td>-</td>
@@ -110,11 +110,23 @@ Operators:
   </tr>
   <tr>
     <td>C</td>
-    <td>Copies current cell number to cell with number of previous cell value. Works with string cells as well as with int</td> 
+    <td>Copies current cell number to cell with number from DATA6. Works with string cells as well as with int</td> 
   </tr>
   <tr>
     <td>@</td>
     <td>Unar minus to current cell</td> 
+  </tr>
+  <tr>
+    <td>P</td>
+    <td>Puts current string cell to a file with name from DATA0 string cell</td> 
+  </tr>
+  <tr>
+    <td>l</td>
+    <td>Loads string to current string cell from file with name from DATA0 string cell</td> 
+  </tr>
+  <tr>
+    <td>&</td>
+    <td>Appends current number cell value to current string cell if mode is 0, and if mode is 1, converts current string cell value to current number cell</td> 
   </tr>
 <tr>
     <td>[:label]</td>
