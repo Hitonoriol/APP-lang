@@ -128,6 +128,18 @@ Operators:
     <td>&</td>
     <td>Appends current number cell value to current string cell if mode is 0, and if mode is 1, converts current string cell value to current number cell</td> 
   </tr>
+  <tr>
+    <td>A</td>
+    <td>Puts substring with start position from DATA0 and length from DATA1 from previous string cell to current</td> 
+  </tr>
+   <tr>
+    <td>b</td>
+    <td>Puts current string cell length to current number cell</td> 
+  </tr>
+  <tr>
+    <td>[e]</td>
+    <td>Skip next goto</td> 
+  </tr>
 <tr>
     <td>[:label]</td>
     <td>Declare a label (any name except ([,],/,\,") )</td> 
