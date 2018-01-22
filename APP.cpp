@@ -191,7 +191,7 @@ bool cmds(string arg){
 		cout<<"INTERPRETER COMMANDS:\n**********\nech - debug mode on/of\nrb - run commands from command buffer (last used)\nsave <filename> - save command buffer to file\nload <filename> - load file to command buffer\nrun <filename> - run file\ncls - clear screen\ntranslate <filename> - translate current command buffer to C++ code\nrunmode - toggle one-line and interactive mode (one-line by default)\n\nDo you want to see operators list? (y/n): ";	
 		if (gt()=="y"){
 		cout<<"\n**********\nOPERATORS:\n**********\n";
-		cout<<"Mappings:\n0, 1 - Data cells\n2 - logical cell (0/1)\n3 - cycle cell\n4 - jmp pointer cell\n5 - floating point precision cell\n6 - copy buffer\n\nOperators:\na\nSets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell\n\np\nIncrements current cell\n\nm\nDecrements current cell\n\nw\nWrites current int cell value if current mode is 0 and writes current string cell value if mode is 1\n\n_\nEchoes end of line\n\n>\nNext cell\n\n<\nPrevious cell\n\n.\nPuts a symbol with code from current int cell to current string cell\n\nv\nAdds 5 to current cell\n\nx\nAdds 10 to current cell\n\ni\nIf MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.\n\n+\nIf MODE is 0, sets value of current cell to sum of DATA0 and DATA1 cells (cell[current] = cell[DATA0] + cell[DATA1]), otherwise, joins two strings from DATA0 and DATA1 string cells to current string cell\n\n-\nSets value of current cell to cell[DATA0] - cell[DATA1]\n\n?\nIf cell[DATA0] == cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n g\nIf cell[DATA0] > cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n s\nIf cell[DATA0] < cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n r\nSets current cell value to random int in range min = cell[DATA0] & max = cell[DATA1]\n\n{...}\nRepeats operators inside of it (0 to cell[DATA3] times)\n\n!...;\nExecutes operators inside of it if cell[DATA2] == 1\n\nc\nPrints current cell number\n\nS\nSwitches MODE between 0 (int) and 1 (string)\n\n/\nMakes cell[current] = cell[DATA0] / cell[DATA1]\n\nj\nJumps to #CELL[DATA4]; first jmp is always to DATA4 cell\n\nR\nReturns to previous memory cell\n\nP\nPuts current string cell value to file with name from string cell DATA0\n\nl\nLoads string from file with name from string cell DATA0 to current string cell/n/n&\nIf MODE is 0, appends current number cell to string cell, otherwise, converts value from current string cell to current number cell\n\n[:labelname]\nCreates label\n\n[#label]\nGo to label\n\n[s]\nJumps to DATA4 cell\n\n[!123]\nSet current cell to value\n\n[>5]\nJumps to cell";
+		cout<<"Mappings:\n0, 1 - Data cells\n2 - logical cell (0/1)\n3 - cycle cell\n4 - jmp pointer cell\n5 - floating point precision cell\n6 - copy buffer\n\nOperators:\na\nSets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell\n\np\nIncrements current cell\n\nm\nDecrements current cell\n\nw\nWrites current int cell value if current mode is 0 and writes current string cell value if mode is 1\n\n_\nEchoes end of line\n\n>\nNext cell\n\n<\nPrevious cell\n\n.\nPuts a symbol with code from current int cell to current string cell\n\nv\nAdds 5 to current cell\n\nx\nAdds 10 to current cell\n\ni\nIf MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.\n\n+\nIf MODE is 0, sets value of current cell to sum of DATA0 and DATA1 cells (cell[current] = cell[DATA0] + cell[DATA1]), otherwise, joins two strings from DATA0 and DATA1 string cells to current string cell\n\n-\nSets value of current cell to cell[DATA0] - cell[DATA1]\n\n?\nIf cell[DATA0] == cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n g\nIf cell[DATA0] > cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n s\nIf cell[DATA0] < cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n r\nSets current cell value to random int in range min = cell[DATA0] & max = cell[DATA1]\n\n{...}\nRepeats operators inside of it (0 to cell[DATA3] times)\n\n!...;\nExecutes operators inside of it if cell[DATA2] == 1\n\nc\nPrints current cell number\n\nS\nSwitches MODE between 0 (int) and 1 (string)\n\n/\nMakes cell[current] = cell[DATA0] / cell[DATA1]\n\nj\nJumps to #CELL[DATA4]; first jmp is always to DATA4 cell\n\nR\nReturns to previous memory cell\n\nP\nPuts current string cell value to file with name from string cell DATA0\n\nl\nLoads string from file with name from string cell DATA0 to current string cell/n/n&\nIf MODE is 0, appends current number cell to string cell, otherwise, converts value from current string cell to current number cell\n\n[:labelname]\nCreates label\n\n[#label]\nGo to label\n\n[s]\nJumps to DATA4 cell\n\n[!123]\nSet current cell to value\n\n[>5]\nJumps to cell\n\nA\nPuts substring from string in previous cell to current cell with start position from DATA0 and length from DATA1\n\nb\nPuts current string cell length to current number cell";
 		return true;
 	}
 }
@@ -436,9 +436,16 @@ void op(string arg)
 			initRandom();
 			c[u] = srnd(c[DATA0], c[DATA1]);
 		}
+		else if (op == "A"){
+			sc[u] = sc[u-1].substr(c[DATA0],c[DATA1]);
+		}
+		else if (op == "b"){
+			c[u] = sc[u].length();
+		}
 		else if (op == "}" || op == ";") translated+="}";
 		else if (op == "{")
 		{
+			bool lastide = ide;
 			ide = true;
 			int lastpos = i;
 			string tmpbuf = cbuf;
@@ -467,27 +474,39 @@ void op(string arg)
 			i=lastpos+fw;
 			translate = true;
 			cbuf = tmpbuf;
-			ide = false;
+			ide = lastide;
 		}
 		else if (op == "!")
 		{
-			ide = true;
-		int fw;
-			if (translate) translated += "if (c[DATA2] == 1){";
-			if (c[DATA2] == 1)
-			{
-			int cc = 0;
-			while(arg.substr(cc,1)!=";") cc++;
+			bool lastide = ide;
+		ide = true;
+			int lastpos = i;
+			string tmpbuf = cbuf;
+			if (translate) translated += "";
+			int cc = 0,kk=0;
+			string ao;
+			cc=i;
+			while(arg.substr(cc,1)!=";"){kk++;cc++;}
 			cc--;
-			fw = cc;
-			int inner = 1;
-			while(inner<=cc){
-				pxtc(arg.substr(i + inner, 1));
+			int fw = kk,inner = 1;
+			int oo = ::i;
+			if (c[DATA2] == 1){
+			cc=0;
+				while(inner<fw){
+				ao = arg.substr(oo + inner, 1);
+				pxtc(ao);
+				translate = false;
 				inner++;
 			}
-			}
-			i+=fw;
-			ide=false;
+			i=lastpos+fw;
+			translate = true;
+			cbuf = tmpbuf;
+			ide = lastide;
+		}
+		else
+		{
+			i = lastpos+fw;
+		}
 		}
 		else if (op == "c")
 		{
