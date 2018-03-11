@@ -1,4 +1,5 @@
 #include <iostream>
+#include <regex>
 #include <stdlib.h>
 #include <iomanip>
 #include <ctime>
@@ -158,6 +159,28 @@ vector < string > spl(string s, string delimiter)
 	return ret;
 }
 
+vector < string > spl(string s, string delimiter,int count)
+{
+	vector < string > ret;
+	s += delimiter;
+	size_t pos = 0;
+	string token;
+	int i = 0;
+	while ((pos = s.find(delimiter)) != std::string::npos && count>0)
+	{
+		token = s.substr(0, pos);
+		ret.push_back(token);
+		s.erase(0, pos + delimiter.length());
+		i++;
+		count--;
+		if (count <=0 && pos != std::string::npos) {
+			ret.push_back(s);
+			break;
+		}
+	}
+	return ret;
+}
+
 string split(string s, string delimiter, int numr)
 {
 	s += delimiter;
@@ -293,16 +316,19 @@ string replace(string & str, const string & oldStr, const string & newStr)
 	return str;
 }
 
-string replace(string & str, const string & oldStr, const string & newStr, int nit)
+string replace(string & str, const string & oldStr, const string & newStr, int nit, bool retpos = false)
 {
 	std::string::size_type pos = 0u;
-	while ((pos = str.find(oldStr, pos)) != std::string::npos || nit>0)
+	while ((pos = str.find(oldStr, pos)) != std::string::npos && nit>0)
 	{
 		str.replace(pos, oldStr.length(), newStr);
 		pos += newStr.length();
 		nit--;
 	}
+	if (!retpos)
 	return str;
+	else
+	return to_string(pos)+":"+str;
 }
 
 bool goskip = false;
@@ -377,6 +403,18 @@ void setvarval(string name, string val)
 	}
 	vars.push_back(make_pair(name, val));
 	return;
+}
+
+int cppsucks(string str, string sub){
+	int occurrences = 0;
+   size_t pos = 0;
+   string s = str;
+   string target = sub;
+   while ((pos = s.find(target, pos )) != std::string::npos) {
+          ++ occurrences;
+          pos += target.length();
+   }
+   return occurrences;
 }
 
 string exec(string arg, bool ret)
@@ -853,100 +891,107 @@ string exec(string arg, bool ret)
 		{
 			dex = false;
 			cop = ops[cur];
-			vector < string > cmd = spl(cop, " ");
+			cout<<"Current: "<<cop<<endl;
+			vector < string > cmd;
+			string fs = spl(cop," ")[0];
+			if (fs == "add" || fs == "sub" || fs == "mul" || fs == "div" || fs == "make"){
+				cmd = spl(cop, " ", 2);
+			}
+			else
+			cmd = spl(cop, " ", 1);
 			trim(cmd[0]);
 			if (cmd[0] == "make")
 			{
+				if (cmd[2].substr(0,1) == "!") cmd[2] = getvarval(cmd[2].substr(1));
 				if (cmd[2].substr(0, 1) != "_")
-					setvarval(cmd[1], replace(cmd[2], "@", " "));
+					setvarval(cmd[1], cmd[2]);
 				else
 				{
 					string ts = cmd[2].substr(1);
-					setvarval(cmd[1], exec(replace(ts, "@", " ")));
+					setvarval(cmd[1], exec(ts));
 				}
 				u++;
 			}
 			else if (cmd[0] == "inc")
 			{
+				if (cmd[1].substr(0,1) == "!") cmd[1] = getvarval(cmd[1].substr(1));
 				if (cmd[1].substr(0,1)!="_"){
 				 int tmp = iconv(getvarval(cmd[1]));
 				return to_string(++tmp);
 				}
 					else {
 						string st = cmd[1].substr(1);
-				int tmp = iconv(exec(replace(st,"@"," ")));
+				int tmp = iconv(exec(st));
 				return to_string(++tmp);
 				}
 			}
 			else if (cmd[0] == "dec")
 			{
+				if (cmd[1].substr(0,1) == "!") cmd[1] = getvarval(cmd[1].substr(1));
 				if (cmd[1].substr(0,1)!="_"){
 				int tmp = iconv(getvarval(cmd[1]));
 				return to_string(--tmp);
 				}
 				else {
 					string st = cmd[1].substr(1);
-				int tmp = iconv(exec(replace(st,"@"," ")));
+				int tmp = iconv(exec(st));
 				return to_string(--tmp);
-				}
-			}
-			else if (cmd[0] == "val")
-			{
-				if (cmd[1].substr(0, 1) != "_")
-					return getvarval(replace(cmd[1], "@", " "));
-				else
-				{
-					string ts = cmd[1].substr(1);
-					return exec(replace(ts, "@", " "), true);
 				}
 			}
 			else if (cmd[0] == "write")
 			{
+				if (cmd[1].substr(0,1) == "!") cmd[1] = getvarval(cmd[1].substr(1));
 				if (cmd[1].substr(0, 1) == "_")
 				{
 					string ads = cmd[1].substr(1);
-					cout << exec(replace(ads, "@", " "));
+					cout << exec(ads);
 				}
 				else
-					cout << replace(cmd[1], "@", " ");
+					cout <<cmd[1];
 			}
 			else if (cmd[0]=="add" || cmd[0] == "sub" || cmd[0] == "mul" || cmd[0] == "div"){
 				int res;
-				string ds = cmd[1].substr(1);
+				int ff = 2;
+				string ds = cmd[1].substr(1) +" "+ cmd[2];
 				if (cmd[1].substr(0,1)!="_")
 				res = iconv(cmd[1]);
-				else
-				res=iconv(replace(ds,"@"," "));
+				else{
+				res=iconv(exec(ds));
+				ff++;
+			}
+			if (cmd[1].substr(0,1) == "!") cmd[1] = getvarval(cmd[1].substr(1));
+			if (cmd[ff].substr(0,1) == "!") cmd[ff] = getvarval(cmd[1].substr(1));
 				string st = cmd[2].substr(1);
-				if (cmd[2].substr(0,1)!="_"){
+				if (cmd[ff].substr(0,1)!="_"){
 				if (cmd[0] == "add")
-				return to_string(res+iconv(cmd[2]));
+				return to_string(res+iconv(cmd[ff]));
 				if (cmd[0] == "sub")
-				return to_string(res-iconv(cmd[2]));
+				return to_string(res-iconv(cmd[ff]));
 				if (cmd[0] == "mul")
-				return to_string(res*iconv(cmd[2]));
+				return to_string(res*iconv(cmd[ff]));
 				if (cmd[0] == "div")
-				return to_string(res/iconv(cmd[2]));
+				return to_string(res/iconv(cmd[ff]));
 				}
 				else{
 				if (cmd[0] == "add")
-				return to_string(res+iconv(exec(replace(st,"@"," "))));
+				return to_string(res+iconv(exec((st))));
 				if (cmd[0] == "sub")
-				return to_string(res-iconv(exec(replace(st,"@"," "))));
+				return to_string(res-iconv(exec((st))));
 				if (cmd[0] == "div")
-				return to_string(res/iconv(exec(replace(st,"@"," "))));
+				return to_string(res/iconv(exec((st))));
 				if (cmd[0] == "mul")
-				return to_string(res*iconv(exec(replace(st,"@"," "))));
+				return to_string(res*iconv(exec((st))));
 				}
 			}
 			else if (cmd[0] == "repeat"){
 				int times;
+				if (cmd[1].substr(0,1) == "!") cmd[1] = getvarval(cmd[1].substr(1));
 				if (cmd[1].substr(0,1)!="_")
 				times = iconv(cmd[1]);
 				else
 				{
 					string ds = cmd[1].substr(1);
-					times = iconv(exec(replace(ds,"@"," ")));
+					times = iconv(exec((ds)));
 				}
 				int cc = ++cur, bl = 0;
 				while (spl(ops[cc]," ")[0]!="endrep"){
