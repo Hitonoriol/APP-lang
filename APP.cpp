@@ -15,7 +15,8 @@
 #define DATA4 4
 #define DATA5 5
 #define DATA6 6
-#define STARTPOINT 7
+#define DATA7 7
+#define STARTPOINT 8
 using namespace std;
 int i = 0;	//global execution iterator
 string in;	//input buffer
@@ -48,7 +49,7 @@ void reset(){
 	return;
 }
 void reinit(){
-	translated = "#define DATA6 6\n#define DATA5 5\n#define DATA2 2\n#define DATA3 3\n#define DATA4 4\n#DEFINE BUFCAP 4096\n#DEFINE DATA0 0\n#DEFINE DATA1 1\n#include <iostream>\n#include <stdlib.h>\n#include <iomanip>\n#include <ctime>\n#include <cstring>\n#include <string>\n#include <sstream>\n#include <fstream>\n\nusing namespace std;\nint lp;\nint c[4096];\nbool debugrun = false;\nstring sc[4096];\nint u = 0;\nint mode=0;\nvoid reset(){mode = 0;ech=0;memset(c, 0, sizeof(c));u = 0;int i = 0;while (i<BUFCAP){sc[i]=\"\";i++;}return;\nstring gt(){string arg;getline(std::cin,arg);return arg;}void initRandom(){srand(time(NULL));}\nstring charc(char a){stringstream ss;string s;ss << a;ss >> s;return s;}int srnd(int first, int last){int val = first + rand() % last;return val;}\nbool writeFile(string filename, string arg){ofstream fout(filename.c_str());fout << arg;fout.close();return true;}string readFile(string path){ifstream input(path.c_str());string str, result;while(std::getline(input, str)) {result += str;}return result;\nmain(){\n";
+	translated = "#define DATA6 6\n#define DATA7 7\n#define DATA5 5\n#define DATA2 2\n#define DATA3 3\n#define DATA4 4\n#DEFINE BUFCAP 4096\n#DEFINE DATA0 0\n#DEFINE DATA1 1\n#include <iostream>\n#include <stdlib.h>\n#include <iomanip>\n#include <ctime>\n#include <cstring>\n#include <string>\n#include <sstream>\n#include <fstream>\n\nusing namespace std;\nint lp;\nint c[4096];\nbool debugrun = false;\nstring sc[4096];\nint u = 0;\nint mode=0;\nvoid reset(){mode = 0;ech=0;memset(c, 0, sizeof(c));u = 0;int i = 0;while (i<BUFCAP){sc[i]=\"\";i++;}return;\nstring gt(){string arg;getline(std::cin,arg);return arg;}void initRandom(){srand(time(NULL));}\nstring charc(char a){stringstream ss;string s;ss << a;ss >> s;return s;}int srnd(int first, int last){int val = first + rand() % last;return val;}\nbool writeFile(string filename, string arg){ofstream fout(filename.c_str());fout << arg;fout.close();return true;}string readFile(string path){ifstream input(path.c_str());string str, result;while(std::getline(input, str)) {result += str;}return result;\nmain(){\n";
 }
 string gt(){
 	string arg;
@@ -306,16 +307,22 @@ void op(string arg)
 		if (translate) translated += "if (mode == 0){cout<<c[u];}else{cout<<sc[u];}";
 			if (mode == 0)
 			{
-				cout << c[u];
+				sc[DATA7] += to_string(c[u]);
 			}
 			else
 			{
-				cout << sc[u];
+				sc[DATA7] += sc[u];
 			}
+		}
+		else if (op == "W"){
+			cout<<sc[DATA7];
+		}
+		else if (op == "P"){
+			sc[DATA7] = "";
 		}
 		else if (op == "_"){
 		if (translate) translated += "cout<<endl;";
-			cout << endl;
+			sc[DATA7] += "\n";
 		}
 		else if (op == ">" && u < BUFCAP){
 		if (translate) translated += "u++;";
@@ -520,7 +527,7 @@ void op(string arg)
 		else if (op == "c")
 		{
 			if (translate) translated += "cout<<u;";
-			cout << u;
+			sc[DATA7] += to_string(u);
 		}
 		else if (op == "C")
 		{
