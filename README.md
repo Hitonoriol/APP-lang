@@ -22,7 +22,15 @@ Operators:
   </tr>
   <tr>
     <td>w</td>
-    <td>Writes current number cell value with float-point precision from DATA5 cell (3 by default) if current mode is 0 and writes current string cell value if mode is 1</td> 
+    <td>Writes current number cell value with float-point precision from DATA5 cell (3 by default) to buffer cell (DATA7) if current mode is 0 and writes current string cell value to buffer cell if mode is 1</td> 
+  </tr>
+   <tr>
+    <td>W</td>
+    <td>Prints buffer cell value on the screen</td> 
+  </tr>
+   <tr>
+    <td>P</td>
+    <td>Clears the buffer cell</td> 
   </tr>
   <tr>
     <td>_</td>
