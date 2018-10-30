@@ -7,7 +7,6 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-#define BUFCAP 4096
 #define DATA0 0
 #define DATA1 1
 #define DATA2 2
@@ -20,8 +19,8 @@
 using namespace std;
 int i = 0;	//global execution iterator
 string in;	//input buffer
-double c[BUFCAP];	//double cells
-string sc[BUFCAP];	//string cells
+vector <double> c;	//double cells
+vector <string> sc;	//string cells
 int u = STARTPOINT;
 int ech = 0; //debug mode
 bool ide = false;	//persistent memory flag
@@ -32,19 +31,56 @@ string cbuf;	//APP code buffer
 
 void op (string arg);
 void pxtc(string arg);
+
+double getCell(int pos){
+	if (pos<c.size()) return c[pos];
+	else return 0;
+}
+
+void cellSet(double value){
+	if (u<c.size()) c.at(u) = value;
+	else {c.resize(u+1); c.at(u) = value;}
+}
+
+void cellSet(double value, int pos){
+	int cu = u;
+	u = pos;
+	cellSet(value);
+	u = cu;
+}
+
+string SgetCell(int pos){
+	if (pos<sc.size()) return sc[pos];
+	else return "";
+}
+
+void ScellSet(string value){
+if (u<sc.size()) sc.at(u) = value;
+	else {sc.resize(u+1); sc.at(u) = value;}
+}
+
+void ScellSet(string value, int pos){
+	int cu = u;
+	u = pos;
+	ScellSet(value);
+	u = cu;
+}
+
+void ScellContSet(string val, int start, int end){
+	while(start<=end){
+		ScellSet(val, start);
+		start++;
+	}
+}
+
 void reset(){
 	mode = 0;
 	ech=0;
-	memset(c, 0, sizeof(c));
-	
-	c[DATA4] = DATA4;
-	c[DATA5] = 3;
+	c.clear();
+	sc.clear();
+	cellSet(DATA4,DATA4);
+	cellSet(3,DATA5);
 	u = STARTPOINT;
-	int i = 0;
-	while (i<BUFCAP){
-		sc[i]="";
-		i++;
-	}
 	return;
 }
 string gt(){
@@ -52,16 +88,19 @@ string gt(){
 	getline(std::cin,arg);
 	return arg;
 }
+
 void initRandom()
 {
 	srand(time(NULL));
 }
+
 int iconv(string Text){ 
 	int Result; 
 	stringstream convert(Text); 
 	if ( !(convert >> Result) ) Result = 0; 
 	return Result; 
 }
+
 string charc(char a){
 stringstream ss;
 string s;
@@ -226,7 +265,7 @@ void smop(string arg){
 	if (ni=="#") { if (!goskip){i = cbuf.find(":"+arg.substr(1))+arg.substr(1).length();}else goskip = false;}
     if (ni==":") {}
     if (ni==">") {u=iconv(arg.substr(1));}
-    if (ni=="!") {c[u]=stod(arg.substr(1));}
+    if (ni=="!") {cellSet(stod(arg.substr(1)));}
     if (ni=="s") {u=DATA4;}
     if (ni=="e") goskip = true;
 }string trace = "";
@@ -279,45 +318,45 @@ void op(string arg)
 			else{
 		if (op == "a"){
 			if (mode == 0){
-				c[u] = 0;
+				cellSet(0);
 			}
 			else{
-			sc[u] = "";
+			ScellSet("");
 			}
 		}
 		else if (op == "p"){
-			c[u]++;
+			cellSet(getCell(u)+1);
 		}
 		else if (op == "j"){
 			lp = u;
-			u = (int)c[DATA4];
+			u = (int)getCell(DATA4);
 		}
 		else if (op == "R"){
 			u = lp;
 		}
 		else if (op == "m"){
-			c[u]--;
+			cellSet(getCell(u)-1);
 		}
 		else if (op == "w"){
 			if (mode == 0)
 			{
-				sc[DATA7] += to_string(c[u]);
+				ScellSet(SgetCell(DATA7)+to_string(getCell(u)),DATA7);
 			}
 			else
 			{
-				sc[DATA7] += sc[u];
+				ScellSet(SgetCell(DATA7)+SgetCell(u),DATA7);
 			}
 		}
 		else if (op == "W"){
-			cout<<sc[DATA7];
+			cout<<SgetCell(DATA7);
 		}
 		else if (op == "P"){
-			sc[DATA7] = "";
+			ScellSet("",DATA7);
 		}
 		else if (op == "_"){
-			sc[DATA7] += "\n";
+			ScellSet(SgetCell(DATA7)+"\n",DATA7);
 		}
-		else if (op == ">" && u < BUFCAP){
+		else if (op == ">"){
 			u++;
 		}
 		else if (op == "<" && u > 0){
@@ -328,29 +367,29 @@ void op(string arg)
 			int aa = c[u];
 			char t = aa;
 			string a = charc(t);
-			sc[u]+=a;
+			ScellSet(SgetCell(u)+a);
 		}
 		else if (op == "v")
 		{
 			if (mode==0){
-			c[u] += 5;
+			cellSet(getCell(u)+5);
 		}
 			else{
-			c[u]-=5;
+			cellSet(getCell(u)-5);
 		}
 		}
 		else if (op == "x")
 		{
 			if (mode==0){
-			c[u] += 10;
+			cellSet(getCell(u)+10);
 		}
 			else{
-			c[u] -= 10;
+			cellSet(getCell(u)-10);
 		}
 		}
 		else if (op == "@")
 		{
-			c[u] *= -1;
+			cellSet(getCell(u)*(-1));
 		}
 		else if (op == "i")
 		{
@@ -359,82 +398,82 @@ void op(string arg)
 				if (!debugrun){
 				string t;
 				getline(std::cin,t);
-				c[u] = stod(t);
+				cellSet(stod(t));
 			}
 			}
 			else
 			{
 				if (!debugrun)
-				sc[u] = gt();
+				ScellSet(gt());
 			}
 		}
 		else if (op == "+")
 		{
 			if (mode==0)
-			c[u] = c[DATA0] + c[DATA1];
+			cellSet(getCell(DATA0) + getCell(DATA1));
 			else
-			sc[u] = sc[DATA0] + sc[DATA1];
+			ScellSet(SgetCell(DATA0) + SgetCell(DATA1));
 		}
 		else if (op == "-")
 		{
-			c[u] = c[DATA0] - c[DATA1];
+			cellSet(getCell(DATA0) - getCell(DATA1));
 		}
 		else if (op == "?")
 		{
 			if (mode==0){
-			if (c[DATA0] == c[DATA1])
+			if (getCell(DATA0) == getCell(DATA1))
 			{
-				c[DATA2] = 1;
+				cellSet(1,DATA2);
 			}
 			else
 			{
-				c[DATA2] = 0;
+				cellSet(0,DATA2);
 			}
 		}
 		else
 		{
-			if (sc[DATA0] == sc[DATA1])
+		if (SgetCell(DATA0) == SgetCell(DATA1))
 			{
-				c[DATA2] = 1;
+				cellSet(1,DATA2);
 			}
 			else
 			{
-				c[DATA2] = 0;
+				cellSet(0,DATA2);
 			}
 		}
 		}
 		else if (op == "g")
 		{
-			if (c[DATA0] > c[DATA1])
+			if (getCell(DATA0) > getCell(DATA1))
 			{
-				c[DATA2] = 1;
+				cellSet(1,DATA2);
 			}
 			else
 			{
-				c[DATA2] = 0;
+				cellSet(0,DATA2);
 			}
 		}
 		else if (op == "s")
 		{
-			if (c[DATA0] < c[DATA1])
+			if (getCell(DATA0) < getCell(DATA1))
 			{
-				c[DATA2] = 1;
+				cellSet(1,DATA2);
 			}
 			else
 			{
-				c[DATA2] = 0;
+				cellSet(0,DATA2);
 			}
 		}
 		else if (op == "r")
 		{
 			initRandom();
-			c[u] = srnd(c[DATA0], c[DATA1]);
+			cellSet(srnd(getCell(DATA0), getCell(DATA1)));
 		}
 		else if (op == "A"){
-			sc[u] = sc[u-1].substr(c[DATA0],c[DATA1]);
+			ScellSet(SgetCell(u-1).substr(getCell(DATA0),getCell(DATA1)));
 		}
 		else if (op == "b"){
-			c[u] = sc[u].length();
+			cellSet(SgetCell(u).length());
 		}
 		else if (op == "}" || op == ";") {}
 		else if (op == "{")
@@ -456,9 +495,9 @@ void op(string arg)
 				ao += arg.substr(oo + inner, 1);
 				inner++;
 			}
-			while (cc < (int)c[DATA3])
+			while (cc < (int)getCell(DATA3))
 			{
-			if (cc>=(int)c[DATA3]) break;
+			if (cc>=(int)getCell(DATA3)) break;
 				pxtc(ao);
 				cc++;
 			}
@@ -481,7 +520,7 @@ void op(string arg)
 			cc--;
 			int fw = kk,inner = 1;
 			int oo = ::i;
-			if (c[DATA2] == 1){
+			if (getCell(DATA2) == 1){
 			cc=0;
 				while(inner<fw){
 				ao += arg.substr(oo + inner, 1);
@@ -501,14 +540,14 @@ void op(string arg)
 		}
 		else if (op == "c")
 		{
-			sc[DATA7] += to_string(u);
+			ScellSet(to_string(u),DATA7);
 		}
 		else if (op == "C")
 		{
 			if (mode==0)
-			c[(int)c[DATA6]] = c[u];
+			cellSet(getCell(u),(int)getCell(DATA6));
 			else
-			sc[(int)c[DATA6]] = sc[u];
+			ScellSet(SgetCell(u),(int)getCell(DATA6));
 		}
 		else if (op == "S")
 		{
@@ -521,17 +560,17 @@ void op(string arg)
 		}
 		else if (op == "/")
 		{
-			c[u] = (c[DATA0]) / (c[DATA1]);
+			cellSet(getCell(DATA0)/getCell(DATA1));
 		}
 		else if (op == "&"){
-			if (mode==0) sc[u] += to_string(c[u]);
-			else c[u] = stod(sc[u]);
+			if (mode==0) ScellSet(to_string(getCell(u)));
+			else cellSet(stod(SgetCell(u)));
 		}
 		else if(op == "P"){
-			writeFile(sc[DATA0],sc[u]);
+			writeFile(SgetCell(DATA0),SgetCell(u));
 		}
 		else if(op == "l"){
-			sc[u] = readFile(sc[DATA0]);
+			ScellSet(readFile(SgetCell(DATA0)));
 		}
 		else
 		{
@@ -549,7 +588,7 @@ void op(string arg)
 	trace+="\n";
 }
 catch (std::exception &e){
-	cout<<"\nAN ERROR HAS OCCURED\n"<<e.what()<<"\nNEAR: "<<trace<<endl<<isms<<"\nRESET...\n";
+	cout<<"\nAN ERROR HAS OCCURED\n"<<e.what()<<"\nNEAR: "<<trace<<endl<<"\nRESET...\n";
 	reset();
 	return;
 }
@@ -562,8 +601,7 @@ void pxtc(string arg)
 
 int main(int argc, char* argv[])
 {
-	c[DATA4] = DATA4;
-	c[DATA5] = 3;
+	reset();
 	if (argc == 1)
 		cout<<"APP INTERPRETER || STARTPOINT: "<<STARTPOINT<<"\nReserved memory cells:\n[DATA0] and [DATA1] data registers\n[DATA2] logical cell (0/1)\n[DATA3] cycle counter\n[DATA4] JMP pointer\n[DATA5] floating point precision value\n[DATA6] copy buffer\n[DATA7] output buffer"<<"\nType \"help\" to see the list of available commands\n";
 	if (argc > 1)
