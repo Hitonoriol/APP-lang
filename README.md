@@ -144,6 +144,18 @@ Operators:
     <td>b</td>
     <td>Puts current string cell length to current number cell</td> 
   </tr>
+   <tr>
+    <td>q</td>
+    <td>Returns the position of the first occurance of substring DATA1 in string DATA0 to current cell</td> 
+  </tr>
+   <tr>
+    <td>Q</td>
+    <td>Erases substring DATA1 from string DATA0 and puts the result to current string cell</td> 
+  </tr>
+   <tr>
+    <td>e</td>
+    <td>Execute APP code from current string cell</td> 
+  </tr>
   <tr>
     <td>[e]</td>
     <td>Skip next goto</td> 

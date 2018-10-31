@@ -530,7 +530,13 @@ void op(string arg) {
             cellSet(SgetCell(DATA0).find(SgetCell(DATA1)));
           } else if (op == "Q") { //erase character from String[DATA0] with position Int[DATA0], length Int[DATA1] --> String[current] 
             ScellSet(SgetCell(DATA0).erase(getCell(DATA0), getCell(DATA1)));
-          } else {
+          } else if (op == "e") {
+          	bool tide = ide;
+          	ide = true;
+          	pxtc(SgetCell(u));
+          	ide = tide;
+		  }
+		   else {
             if (ech == 1)
               cout << endl << "UNKNOWN OP: '" + op + "'" << endl;
           }
