@@ -283,7 +283,7 @@ void smop(string arg) {
   	if (fch == "$"){
   		cellSet(getCell(atoi(bff[1].substr(1).c_str())), atoi(bff[0].c_str()));
 	}
-	else if (fch == "%"){	//xv[$0=$8][$0=%wW]Pp_wWP_WcW
+	else if (fch == "%"){
 		int ti = i, tu = u;
 		bool tide = ide;
 		ide = true;
