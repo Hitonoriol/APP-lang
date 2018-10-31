@@ -339,7 +339,7 @@ void op(string arg) {
           echof = 1;
         }
         if (echof == 1 && op != "\"") {
-          sc[u] += op;
+        	ScellSet(SgetCell(u)+op);
         } else {
           if (op == "a") {	//0:Int[current] = 0 1:String[current] = ""
             if (mode == 0) {
@@ -531,11 +531,15 @@ void op(string arg) {
           } else if (op == "Q") { //erase character from String[DATA0] with position Int[DATA0], length Int[DATA1] --> String[current] 
             ScellSet(SgetCell(DATA0).erase(getCell(DATA0), getCell(DATA1)));
           } else if (op == "e") {
+          	int lastpos = i;
+          	string rbf = SgetCell(u);
           	bool tide = ide;
           	ide = true;
-          	pxtc(SgetCell(u));
+          	pxtc(rbf);
+          	i = lastpos;
           	ide = tide;
 		  }
+		  
 		   else {
             if (ech == 1)
               cout << endl << "UNKNOWN OP: '" + op + "'" << endl;
