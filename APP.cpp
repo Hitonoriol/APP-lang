@@ -58,10 +58,10 @@ string SgetCell(int pos) {
 }
 
 void ScellSet(string value) {
-  if (u < sc.size()) sc.at(u) = value;
+  if (u <= sc.size()) sc[u] = value;
   else {
     sc.resize(u + 1);
-    sc.at(u) = value;
+    sc[u] = value;
   }
 }
 
@@ -275,7 +275,27 @@ void smop(string arg) {
       i = cbuf.find(":" + arg.substr(1)) + arg.substr(1).length();
     } else goskip = false;
   }
-  if (ni == ":") {}
+  if (ni == ":") {/*Just so you know this char is in use*/}
+  if (ni == "_") {/*Just so you know this char is in use[2]*/}
+  if (ni == "$") { //$25=13 <--set 25th cell to 13 || $25=$13 <--set 25th cell to 13th value || $25=%appwW <-- exec operators in 25th cell
+  	vector<string> bff = spl(arg.substr(1),"=");
+  	string fch = bff[1].substr(0,1);
+  	if (fch == "$"){
+  		cellSet(getCell(atoi(bff[1].substr(1).c_str())), atoi(bff[0].c_str()));
+	}
+	else if (fch == "%"){	//xv[$0=$8][$0=%wW]Pp_wWP_WcW
+		int ti = i, tu = u;
+		bool tide = ide;
+		ide = true;
+		u = atoi(bff[0].c_str());
+		string rbg = bff[1].substr(1);
+		pxtc(rbg);
+		ide = tide;
+		u = tu;
+		i = ti;
+	} else
+  		 cellSet(atoi(bff[1].c_str()), atoi(bff[0].c_str()));
+  }
   if (ni == ">") {
     u = iconv(arg.substr(1));
   }
@@ -519,6 +539,8 @@ void op(string arg) {
               cout << endl << "SWITCHED TO MODE " << mode << endl;
           } else if (op == "/") {	//Int[DATA0] / Int[DATA1] --> Int[current]
             cellSet(getCell(DATA0) / getCell(DATA1));
+          } else if (op == "*") {	//Int[DATA0] * Int[DATA1] --> Int[current]
+            cellSet(getCell(DATA0) * getCell(DATA1));
           } else if (op == "&") {	//0: Int[current] --> String[current] 1: String[current] --> Int[current]
             if (mode == 0) ScellSet(to_string(getCell(u)));
             else cellSet(stod(SgetCell(u)));
@@ -530,9 +552,9 @@ void op(string arg) {
             cellSet(SgetCell(DATA0).find(SgetCell(DATA1)));
           } else if (op == "Q") { //erase character from String[DATA0] with position Int[DATA0], length Int[DATA1] --> String[current] 
             ScellSet(SgetCell(DATA0).erase(getCell(DATA0), getCell(DATA1)));
-          } else if (op == "e") {
+          } else if (op == "e") { //execute APP code from String[Int[DATA0]]
           	int lastpos = i;
-          	string rbf = SgetCell(u);
+          	string rbf = SgetCell(getCell(DATA0));
           	bool tide = ide;
           	ide = true;
           	pxtc(rbf);

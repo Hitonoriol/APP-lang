@@ -154,7 +154,19 @@ Operators:
   </tr>
    <tr>
     <td>e</td>
-    <td>Execute APP code from current string cell</td> 
+    <td>Execute APP code from String[Int[DATA0]]</td> 
+  </tr>
+<tr>
+    <td>[$5=10]</td>
+    <td>Set 5th Int cell's value to 10</td> 
+  </tr>
+<tr>
+    <td>[$5=$10]</td>
+    <td>Set 5th Int cell's value to 10th cell value</td> 
+  </tr>
+<tr>
+    <td>[$5=%ppwW]</td>
+    <td>Run operators in 5th cell</td> 
   </tr>
   <tr>
     <td>[e]</td>
