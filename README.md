@@ -138,7 +138,7 @@ Operators:
   </tr>
   <tr>
     <td>A</td>
-    <td>Puts substring with start position from DATA0 and length from DATA1 from previous string cell to current</td> 
+    <td>Puts substring from string DATA0 with start DATA0 and length DATA1 to current string cell</td> 
   </tr>
    <tr>
     <td>b</td>

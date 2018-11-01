@@ -458,8 +458,8 @@ void op(string arg) {
           } else if (op == "r") {	//random between Int[DATA0] and Int[DATA1] --> Int[current]
             initRandom();
             cellSet(srnd(getCell(DATA0), getCell(DATA1)));
-          } else if (op == "A") {	//substring from String[current-1] starting on Int[DATA0] with length Int[DATA1] --> String[current]
-            ScellSet(SgetCell(u - 1).substr(getCell(DATA0), getCell(DATA1)));
+          } else if (op == "A") {	//substring from String[DATA0] starting on Int[DATA0] with length Int[DATA1] --> String[current]
+            ScellSet(SgetCell(DATA0).substr(getCell(DATA0), getCell(DATA1)));
           } else if (op == "b") {	//String[current].length() --> Int[current]
             cellSet(SgetCell(u).length());
           } else if (op == "}" || op == ";") {} else if (op == "{") {	//executes everything between {...} Int[DATA3] times
