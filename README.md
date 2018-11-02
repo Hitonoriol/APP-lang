@@ -138,7 +138,7 @@ Operators:
   </tr>
   <tr>
     <td>A</td>
-    <td>Puts substring from string DATA0 with start DATA0 and length DATA1 to current string cell</td> 
+    <td>Puts substring from string DATA0 with start DATA0 and length DATA1 to destination string cell</td> 
   </tr>
    <tr>
     <td>b</td>
@@ -146,16 +146,21 @@ Operators:
   </tr>
    <tr>
     <td>q</td>
-    <td>Returns the position of the first occurance of substring DATA1 in string DATA0 to current cell</td> 
+    <td>Returns the position of the first occurance of substring DATA1 in string DATA0 to destination cell</td> 
   </tr>
    <tr>
     <td>Q</td>
-    <td>Erases substring DATA1 from string DATA0 and puts the result to current string cell</td> 
+    <td>Erases substring DATA1 from string DATA0 and puts the result to destination string cell</td> 
   </tr>
    <tr>
     <td>e</td>
     <td>Execute APP code from String[Int[DATA0]]</td> 
   </tr>
+   <tr>
+    <td>D</td>
+    <td>Sets destination to current cell</td> 
+  </tr>
+
 <tr>
     <td>[$5=10]</td>
     <td>Set 5th Int cell's value to 10</td> 

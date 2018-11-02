@@ -17,6 +17,7 @@
 # define DATA7 7
 # define STARTPOINT 8
 using namespace std;
+int dest = STARTPOINT; //destination cell
 int i = 0; //global execution iterator
 string in ; //input buffer
 vector < double > c; //double cells
@@ -28,7 +29,6 @@ int mode = 0; //string/int mode
 int lp = 0; //pointer for JMP and RET
 bool debugrun = false; //flag to silence output when saving/translating
 string cbuf; //APP code buffer
-
 void op(string arg);
 void pxtc(string arg);
 
@@ -58,7 +58,7 @@ string SgetCell(int pos) {
 }
 
 void ScellSet(string value) {
-  if (u <= sc.size()) sc[u] = value;
+  if (u < sc.size()) sc[u] = value;
   else {
     sc.resize(u + 1);
     sc[u] = value;
@@ -243,8 +243,9 @@ bool cmds(string arg) {
   if (arg == "run") {
     string fname = split(bufa, " ", 1) + ".appl";
     cout << "Running " << fname << endl;
-    op(readFile(fname));
-    cout << "End of program.";
+    cbuf = readFile(fname);
+    op(cbuf);
+    cout << "\nEnd of program.";
     return true;
   }
   if (arg == "help") {
@@ -281,7 +282,10 @@ void smop(string arg) {
   	vector<string> bff = spl(arg.substr(1),"=");
   	string fch = bff[1].substr(0,1);
   	if (fch == "$"){
+  		if (mode == 0)
   		cellSet(getCell(atoi(bff[1].substr(1).c_str())), atoi(bff[0].c_str()));
+  		else
+  		ScellSet(SgetCell(atoi(bff[1].substr(1).c_str())), atoi(bff[0].c_str()));
 	}
 	else if (fch == "%"){
 		int ti = i, tu = u;
@@ -289,10 +293,13 @@ void smop(string arg) {
 		ide = true;
 		u = atoi(bff[0].c_str());
 		string rbg = bff[1].substr(1);
+		string tbf = cbuf;
 		pxtc(rbg);
+		cbuf = tbf;
 		ide = tide;
 		u = tu;
 		i = ti;
+		
 	} else
   		 cellSet(atoi(bff[1].c_str()), atoi(bff[0].c_str()));
   }
@@ -328,7 +335,6 @@ void op(string arg) {
   try {
     while (i < nn) {
       trace += arg.substr(i, 1);
-      cout << std::fixed << setprecision((int) c[DATA5]);
       op = arg.substr(i, 1);
       if (op == "\\") {
         if (iscmd) iscmd = false;
@@ -386,13 +392,13 @@ void op(string arg) {
             cout << SgetCell(DATA7);
           } else if (op == "P") {	// "" --> String[DATA7](clear the output buffer)
             ScellSet("", DATA7);
-          } else if (op == "_") {	//line break --> String[DATA7](output buffer)
+          } else if (op == "_") {	//append line break --> String[DATA7](output buffer)
             ScellSet(SgetCell(DATA7) + "\n", DATA7);
           } else if (op == ">") {	//next memory cell
             u++;
           } else if (op == "<" && u > 0) {	//previous memory cell
             u--;
-          } else if (op == ".") {	//char(Int[current]) --> append String[current]
+          } else if (op == ".") {	//char(Int[current]) --> append to String[current]
             int aa = c[u];
             char t = aa;
             string a = charc(t);
@@ -458,8 +464,8 @@ void op(string arg) {
           } else if (op == "r") {	//random between Int[DATA0] and Int[DATA1] --> Int[current]
             initRandom();
             cellSet(srnd(getCell(DATA0), getCell(DATA1)));
-          } else if (op == "A") {	//substring from String[DATA0] starting on Int[DATA0] with length Int[DATA1] --> String[current]
-            ScellSet(SgetCell(DATA0).substr(getCell(DATA0), getCell(DATA1)));
+          } else if (op == "A") {	//substring from String[DATA0] starting on Int[DATA0] with length Int[DATA1] --> String[dest]
+            ScellSet(SgetCell(u)+SgetCell(DATA0).substr(getCell(DATA0), getCell(DATA1)),dest);
           } else if (op == "b") {	//String[current].length() --> Int[current]
             cellSet(SgetCell(u).length());
           } else if (op == "}" || op == ";") {} else if (op == "{") {	//executes everything between {...} Int[DATA3] times
@@ -524,7 +530,7 @@ void op(string arg) {
             }
             nestflag = false;
           } else if (op == "c") {	//Current memory position --> String[DATA7](output buffer)
-            ScellSet(to_string(u), DATA7);
+            ScellSet(SgetCell(u)+to_string(u), DATA7);
           } else if (op == "C") {	//0: Int[Int[DATA6]] <-- Int[current] 1:same thing, but w\ strings
             if (mode == 0)
               cellSet(getCell(u), (int) getCell(DATA6));
@@ -548,34 +554,36 @@ void op(string arg) {
             writeFile(SgetCell(DATA0), SgetCell(u));
           } else if (op == "l") {	//read file String[DATA0] --> String[current]
             ScellSet(readFile(SgetCell(DATA0)));
-          } else if (op == "q") { //search for String[DATA1] in String[DATA0] --> Int[current]
-            cellSet(SgetCell(DATA0).find(SgetCell(DATA1)));
-          } else if (op == "Q") { //erase character from String[DATA0] with position Int[DATA0], length Int[DATA1] --> String[current] 
-            ScellSet(SgetCell(DATA0).erase(getCell(DATA0), getCell(DATA1)));
+          } else if (op == "q") { //search for String[DATA1] in String[DATA0] --> Int[dest]
+            cellSet(SgetCell(DATA0).find(SgetCell(DATA1)),dest);
+          } else if (op == "Q") { //erase character from String[DATA0] with position Int[DATA0], length Int[DATA1] --> String[dest] 
+            ScellSet(SgetCell(DATA0).erase(getCell(DATA0), getCell(DATA1)),dest);
           } else if (op == "e") { //execute APP code from String[Int[DATA0]]
           	int lastpos = i;
           	string rbf = SgetCell(getCell(DATA0));
           	bool tide = ide;
           	ide = true;
+          	string tbf = cbuf;
           	pxtc(rbf);
+          	cbuf = tbf;
           	i = lastpos;
           	ide = tide;
+		  } else if (op=="D") { //set destination to current cell
+		  	dest = u;
 		  }
-		  
 		   else {
             if (ech == 1)
               cout << endl << "UNKNOWN OP: '" + op + "'" << endl;
           }
         }
       }
-      if (echof == 0 && !isms && !iscmd) {}
       i++;
     }
     if (!ide) reset();
     debugrun = false;
     trace += "\n";
   } catch (std::exception & e) {
-    cout << "\nAN ERROR HAS OCCURED\n" << e.what() << "\nNEAR: " << trace << endl << "\nRESET...\n";
+    cout << "\nAN ERROR HAS OCCURED\n" << e.what() << "\nNEAR: " << trace << endl << "\nRESETTING...\n";
     reset();
     return;
   }
