@@ -287,6 +287,19 @@ void smop(string arg) {
   		else
   		ScellSet(SgetCell(atoi(bff[1].substr(1).c_str())), atoi(bff[0].c_str()));
 	}
+	if (fch == "#"){
+		int ti = i, tu = u;
+		bool tide = ide;
+		ide = true;
+		u = atoi(bff[0].c_str());
+		string rbg = SgetCell(atoi(bff[1].substr(1).c_str()));
+		string tbf = cbuf;
+		pxtc(rbg);
+		cbuf = tbf;
+		ide = tide;
+		u = tu;
+		i = ti;
+	}
 	else if (fch == "%"){
 		int ti = i, tu = u;
 		bool tide = ide;
