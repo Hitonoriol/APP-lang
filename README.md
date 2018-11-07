@@ -169,6 +169,10 @@ Operators:
     <td>Set 5th Int cell's value to 10th cell value</td> 
   </tr>
 <tr>
+    <td>[$5=#10]</td>
+    <td>Temporarily set current cell to 5th and execute APP code from 10th string cell</td> 
+  </tr>
+<tr>
     <td>[$5=%ppwW]</td>
     <td>Run operators in 5th cell</td> 
   </tr>
