@@ -32,7 +32,7 @@ string cbuf; //APP code buffer
 void op(string arg);
 void pxtc(string arg);
 
-string str_prec(const double a_value, const int n) {
+string str_prec(const double a_value, const int n = 0) {
     ostringstream out;
     out.precision(n);
     out << std::fixed << a_value;
@@ -299,8 +299,8 @@ void smop(string arg) {
   if (ni == "$") { //$25=13 <--set 25th cell to 13 || $25=$13 <--set 25th cell to 13th value || $25=%appwW <-- exec operators in 25th cell
   	vector<string> bff = spl(arg.substr(1),"=");
   	string fch = bff[1].substr(0,1);
-  	if (bff[0]=="c") bff[0] == to_string(u);
-  	if (bff[1].substr(1)=="c") bff[1]=fch+to_string(u);
+  	if (bff[0]=="c") bff[0] == str_prec(u);
+  	if (bff[1].substr(1)=="c") bff[1]=fch+str_prec(u);
   	if (fch == "$"){	//check:xvwWP_W[$0=$8][$0=%PwW]
   		int value = atoi(bff[1].substr(1).c_str()), pos = atoi(bff[0].c_str());
   		if (mode == 0){
@@ -343,7 +343,7 @@ void smop(string arg) {
     u = iconv(arg.substr(1));
   }
   if (ni == "!") {
-    cellSet(stod(arg.substr(1)));
+    cellSet(atof(arg.substr(1).c_str()));
   }
   if (ni == "s") {
     u = DATA4;
@@ -458,7 +458,7 @@ void op(string arg) {
               if (!debugrun) {
                 string t;
                 getline(std::cin, t);
-                cellSet(stod(t));
+                cellSet(atof(t.c_str()));
               }
             } else {
               if (!debugrun)
@@ -566,7 +566,7 @@ void op(string arg) {
             }
             nestflag = false;
           } else if (op == "c") {	//Current memory position --> String[DATA7](output buffer)
-            ScellSet(SgetCell(u)+to_string(u), DATA7);
+            ScellSet(SgetCell(u)+str_prec(u), DATA7);
           } else if (op == "C") {	//0: Int[Int[DATA6]] <-- Int[current] 1:same thing, but w\ strings
             if (mode == 0)
               cellSet(getCell(u), (int) getCell(DATA6));
@@ -584,8 +584,8 @@ void op(string arg) {
           } else if (op == "*") {	//Int[DATA0] * Int[DATA1] --> Int[current]
             cellSet(getCell(DATA0) * getCell(DATA1));
           } else if (op == "&") {	//0: Int[current] --> String[current] 1: String[current] --> Int[current]
-            if (mode == 0) ScellSet(to_string(getCell(u)));
-            else cellSet(stod(SgetCell(u)));
+            if (mode == 0) ScellSet(str_prec(getCell(u)));
+            else cellSet(atof(SgetCell(u).c_str()));
           } else if (op == "P") {	//write String[current] to file String[DATA0]
             writeFile(SgetCell(DATA0), SgetCell(u));
           } else if (op == "l") {	//read file String[DATA0] --> String[current]
@@ -629,22 +629,49 @@ void pxtc(string arg) {
   op(arg);
 }
 
+void promtExit(bool force = false){
+	if (force) exit(0);
+	cout << "\nQuit? (y/n): ";
+   		if (gt() == "y") {
+      		exit(0);
+    	}
+}
+
+string joinFrom(char* arg[], int from, int argc){
+	string ret = "";
+	while (from<argc){
+		ret+=string(arg[from]);
+		from++;
+	}
+	return ret;
+}
+
 int main(int argc, char * argv[]) {
   reset();
   if (argc == 1)
     cout << "APP INTERPRETER || STARTPOINT: " << STARTPOINT << "\nReserved memory cells:\n[DATA0] and [DATA1] data registers\n[DATA2] logical cell (0/1)\n[DATA3] cycle counter\n[DATA4] JMP pointer\n[DATA5] floating point precision value\n[DATA6] copy buffer\n[DATA7] output buffer" << "\nType \"help\" to see the list of available commands\n";
   if (argc > 1) {
     string runc = string(argv[1]);
+    if (runc == "--file"){
     cout << "Running user program...\n\n";
-    op(readFile(runc));
-    cout << "\nEnd of program. Quit? (y/n): ";
-    if (gt() == "y") {
-      return 0;
-    }
+    op(readFile(argv[2]));
+    promtExit(true);
+	}
+	if (runc == "--code"){
+		string fp = joinFrom(argv,2,argc);
+		op(fp);
+		promtExit(true);
+	}
+	if (runc == "--help" || runc == "--usage"){
+		cout<<"Usage: app [--file <filename.appl>] or [--code <APP code>]"<<endl;
+		promtExit(true);
+	}
   }
   while (true) {
     cout << endl << ">> ";
     getline(std::cin, in );
+	if (in == "exit") promtExit();
+	else
     op( in );
   }
 }
