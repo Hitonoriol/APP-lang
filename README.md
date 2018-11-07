@@ -160,7 +160,6 @@ Operators:
     <td>D</td>
     <td>Sets destination to current cell</td> 
   </tr>
-
 <tr>
     <td>[$5=10]</td>
     <td>Set 5th Int cell's value to 10</td> 
@@ -172,6 +171,10 @@ Operators:
 <tr>
     <td>[$5=%ppwW]</td>
     <td>Run operators in 5th cell</td> 
+  </tr>
+<tr>
+    <td>[$c=10] / [$c=$10] / [$c=%app] / [$10=$c]</td>
+    <td>c -- current cell</td> 
   </tr>
   <tr>
     <td>[e]</td>

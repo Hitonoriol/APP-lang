@@ -32,6 +32,14 @@ string cbuf; //APP code buffer
 void op(string arg);
 void pxtc(string arg);
 
+string str_prec(const double a_value, const int n) {
+    ostringstream out;
+    out.precision(n);
+    out << std::fixed << a_value;
+    return out.str();
+}
+
+
 double getCell(int pos) {
   if (pos < c.size()) return c[pos];
   else return 0;
@@ -46,10 +54,11 @@ void cellSet(double value) {
 }
 
 void cellSet(double value, int pos) {
-  int cu = u;
-  u = pos;
-  cellSet(value);
-  u = cu;
+  if (pos < c.size()) c.at(pos) = value;
+  else {
+    c.resize(pos + 1);
+    c.at(pos) = value;
+  }
 }
 
 string SgetCell(int pos) {
@@ -260,6 +269,15 @@ bool cmds(string arg) {
   return false;
 }
 
+string replace(std::string str, const std::string& from, const std::string& to) {
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+    return str;
+}
+
 string sconv(int Number) {
   string Result;
   stringstream convert;
@@ -281,12 +299,17 @@ void smop(string arg) {
   if (ni == "$") { //$25=13 <--set 25th cell to 13 || $25=$13 <--set 25th cell to 13th value || $25=%appwW <-- exec operators in 25th cell
   	vector<string> bff = spl(arg.substr(1),"=");
   	string fch = bff[1].substr(0,1);
-  	if (fch == "$"){
-  		if (mode == 0)
-  		cellSet(getCell(atoi(bff[1].substr(1).c_str())), atoi(bff[0].c_str()));
-  		else
-  		ScellSet(SgetCell(atoi(bff[1].substr(1).c_str())), atoi(bff[0].c_str()));
-	}
+  	if (bff[0]=="c") bff[0] == to_string(u);
+  	if (bff[1].substr(1)=="c") bff[1]=fch+to_string(u);
+  	if (fch == "$"){	//check:xvwWP_W[$0=$8][$0=%PwW]
+  		int value = atoi(bff[1].substr(1).c_str()), pos = atoi(bff[0].c_str());
+  		if (mode == 0){
+  			cellSet(getCell(value), pos);
+  		}
+  		else {
+  			ScellSet(SgetCell(value), pos);
+  		}
+	} else
 	if (fch == "#"){
 		int ti = i, tu = u;
 		bool tide = ide;
@@ -397,7 +420,7 @@ void op(string arg) {
             cellSet(getCell(u) - 1);
           } else if (op == "w") {	//0: write int to output buffer 1: same with strings
             if (mode == 0) {
-              ScellSet(SgetCell(DATA7) + to_string(getCell(u)), DATA7);
+              ScellSet(SgetCell(DATA7) + str_prec(getCell(u),getCell(DATA5)), DATA7);
             } else {
               ScellSet(SgetCell(DATA7) + SgetCell(u), DATA7);
             }
