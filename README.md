@@ -94,7 +94,7 @@ Operators:
   </tr>
   <tr>
     <td>c</td>
-    <td>Prints current cell number</td> 
+    <td>Puts current cell number to current int cell</td> 
   </tr>
   <tr>
     <td>S</td>
@@ -159,6 +159,22 @@ Operators:
    <tr>
     <td>D</td>
     <td>Sets destination to current cell</td> 
+  </tr>
+     <tr>
+    <td>0</td>
+    <td>Sets DATA0 to current cell's address</td> 
+  </tr>
+     <tr>
+    <td>1</td>
+    <td>Set DATA1 to current cell's address</td> 
+  </tr>
+     <tr>
+    <td>z</td>
+    <td>Pushes current cell's value to stack (mode0 -> int; mode1 -> string)</td> 
+  </tr>
+     <tr>
+    <td>Z</td>
+    <td>Pops the top value from stack to current cell</td> 
   </tr>
 <tr>
     <td>[$5=10]</td>
