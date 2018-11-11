@@ -92,6 +92,10 @@ void ScellContSet(string val, int start, int end) {
 }
 
 void reset() {
+  DATA0 = 0;
+  DATA1 = 1;
+  s = stack<double>();
+  ss = stack<string>();
   mode = 0;
   ech = 0;
   c.clear();
