@@ -16,17 +16,18 @@
 # define DATA7 7
 # define STARTPOINT 8
 using namespace std;
+bool ech = 0; //debug mode
 int DATA0 = 0;
 int DATA1 = 1;
 int dest = STARTPOINT; //destination cell
 int i = 0; //global execution iterator
+bool wgt = false; //goto flag for block ops
 string in ; //input buffer
 vector <double> c; //double cells
 vector <string> sc; //string cells
 stack <double> s;
 stack <string> ss;
 int u = STARTPOINT;
-int ech = 0; //debug mode
 bool ide = false; //persistent memory flag
 int mode = 0; //string/int mode
 int lp = 0; //pointer for JMP and RET
@@ -34,6 +35,10 @@ bool debugrun = false; //flag to silence output when saving/translating
 string cbuf; //APP code buffer
 void op(string arg);
 void pxtc(string arg);
+
+void echo(string arg) {
+	if (ech) cout << arg << endl;
+}
 
 string str_prec(const double a_value, const int n = 0) {
     ostringstream out;
@@ -92,12 +97,12 @@ void ScellContSet(string val, int start, int end) {
 }
 
 void reset() {
+	echo ("RESETTING");
   DATA0 = 0;
   DATA1 = 1;
   s = stack<double>();
   ss = stack<string>();
   mode = 0;
-  ech = 0;
   c.clear();
   sc.clear();
   cellSet(DATA4, DATA4);
@@ -138,10 +143,6 @@ int srnd(int first, int last) {
 string spl(string s, int i) {
   std::string delimiter = " ";
   return s.substr(i, s.find(delimiter));
-}
-
-void echo(string arg) {
-  cout << arg << endl;
 }
 
 bool writeFile(string filename, string arg) {
@@ -217,10 +218,10 @@ bool cmds(string arg) {
   if (arg == "runmode") {
     if (ide) {
       ide = false;
-      if (ech) cout << "Persistent memory off!\n(all data cells will be wiped after program execution)\n";
+      echo("Persistent memory off!\n(all data cells will be wiped after program execution)");
     } else {
       ide = true;
-      cout << "Persistent memory on!\n(data cells won't be wiped after program execution')\n";
+      echo("Persistent memory on!\n(data cells won't be wiped after program execution')");
     }
     return true;
   }
@@ -237,10 +238,10 @@ bool cmds(string arg) {
     return true;
   }
   if (arg == "ech") {
-    if (ech == 1)
-      ech = 0;
+    if (ech)
+      ech = false;
     else
-      ech = 1;
+      ech = true;
     return true;
   }
   if (arg == "save") {
@@ -298,7 +299,11 @@ void smop(string arg) {
   string cmd = arg;
   if (ni == "#") {
     if (!goskip) {
-      i = cbuf.find(":" + arg.substr(1)) + arg.substr(1).length();
+    	string lbl = ":" + arg.substr(1);
+    	int relpos = arg.substr(1).length();
+      i = cbuf.find(lbl) + relpos+1;
+      wgt = true;
+      echo("Going to "+lbl+" raw: "+cbuf.substr(i));
     } else goskip = false;
   }
   if (ni == ":") {/*Just so you know this char is in use*/}
@@ -338,6 +343,7 @@ void smop(string arg) {
 		string rbg = bff[1].substr(1);
 		string tbf = cbuf;
 		pxtc(rbg);
+		echo(str_prec(u)+"c = "+str_prec(getCell(u)));
 		cbuf = tbf;
 		ide = tide;
 		u = tu;
@@ -352,9 +358,10 @@ void smop(string arg) {
   if (ni == "!") {
     cellSet(atof(arg.substr(1).c_str()));
   }
-  if (ni == "s") {
-    u = DATA4;
+  if (ni == "0") {
+    mode = 0;
   }
+  if (ni == "1") mode = 1;
   if (ni == "e") goskip = true;
 }
 string trace = "";
@@ -390,6 +397,8 @@ void op(string arg) {
         isms = false;
         smop(smbuf);
         smbuf = "";
+        i++;
+        continue;
       }
       if (isms && op != "[" && op != "]") smbuf += op;
       if (!iscmd && scmd != "") {
@@ -474,18 +483,22 @@ void op(string arg) {
           } else if (op == "+") {	//Int[DATA0] + Int[DATA1] --> Int[current]
             if (mode == 0)
               cellSet(getCell(DATA0) + getCell(DATA1));
-            else
+            else{
+              echo("Concat "+SgetCell(DATA0)+" and "+SgetCell(DATA1));
               ScellSet(SgetCell(DATA0) + SgetCell(DATA1));
+          }
           } else if (op == "-") {	//Int[DATA0] - Int[DATA1] --> Int[current]
             cellSet(getCell(DATA0) - getCell(DATA1));
           } else if (op == "?") {	//0: if Int[DATA0] == Int[DATA1] --> Int[DATA2]=1 1:same, but with strings
             if (mode == 0) {
+            	echo ("Compairing "+str_prec(getCell(DATA0))+" and "+str_prec(getCell(DATA1)));
               if (getCell(DATA0) == getCell(DATA1)) {
                 cellSet(1, DATA2);
               } else {
                 cellSet(0, DATA2);
               }
             } else {
+            	echo ("Compairing "+(SgetCell(DATA0))+" and "+(SgetCell(DATA1)));
               if (SgetCell(DATA0) == SgetCell(DATA1)) {
                 cellSet(1, DATA2);
               } else {
@@ -493,6 +506,7 @@ void op(string arg) {
               }
             }
           } else if (op == "g") {	//if Int[DATA0] > Int[DATA1] --> Int[DATA2]=1
+          	echo("if "+str_prec(getCell(DATA0))+">"+str_prec(getCell(DATA1)));
             if (getCell(DATA0) > getCell(DATA1)) {
               cellSet(1, DATA2);
             } else {
@@ -512,6 +526,7 @@ void op(string arg) {
           } else if (op == "b") {	//String[current].length() --> Int[current]
             cellSet(SgetCell(u).length());
           } else if (op == "}" || op == ";") {} else if (op == "{") {	//executes everything between {...} Int[DATA3] times
+            if (wgt) wgt = false;
             nestflag = true;
             bool lastide = ide;
             ide = true;
@@ -532,16 +547,19 @@ void op(string arg) {
               ao += arg.substr(oo + inner, 1);
               inner++;
             }
+            echo ("Cycling "+ao+" "+str_prec(getCell(DATA3))+" times");
             while (cc < (int) getCell(DATA3)) {
-              if (cc >= (int) getCell(DATA3)) break;
               pxtc(ao);
               cc++;
             }
+            if (!wgt)
             i = lastpos + fw;
+            wgt = false;
             cbuf = tmpbuf;
             ide = lastide;
             nestflag = false;
           } else if (op == "!") {	//if Int[DATA2]==1 executes everything between !...;
+            if (wgt) wgt = false;
             nestflag = true;
             bool lastide = ide;
             ide = true;
@@ -564,7 +582,9 @@ void op(string arg) {
                 inner++;
               }
               pxtc(ao);
+              if (!wgt)
               i = lastpos + fw;
+              wgt = false;
               cbuf = tmpbuf;
               ide = lastide;
             } else {
@@ -584,8 +604,7 @@ void op(string arg) {
               mode = 1;
             else
               mode = 0;
-            if (ech == 1)
-              cout << endl << "SWITCHED TO MODE " << mode << endl;
+              echo("SWITCHED TO MODE "+mode);
           } else if (op == "/") {	//Int[DATA0] / Int[DATA1] --> Int[current]
             cellSet(getCell(DATA0) / getCell(DATA1));
           } else if (op == "*") {	//Int[DATA0] * Int[DATA1] --> Int[current]
@@ -616,8 +635,10 @@ void op(string arg) {
 		  } else if (op=="z") {	//push current cell to stack
 		  	if (mode == 0)
 			  s.push(getCell(u));
-			else
+			else{
+			  echo ("Pushing "+SgetCell(u)+" to stack");
 			  ss.push(SgetCell(u));
+		}
 		  } else if (op == "Z"){	//put the top stack value to cell
 		  	if (mode==0) {cellSet(s.top()); s.pop();}
 		  	else {ScellSet(SgetCell(u)+ss.top()); ss.pop();}
@@ -625,10 +646,12 @@ void op(string arg) {
 		  	DATA0 = u;
 		  } else if (op == "1"){	//set DATA1 to curent cell
 		  	DATA1 = u;
+		  } else if (op == "E"){
+		  	if (mode == 0) cellSet(s.size());
+		  	else cellSet(ss.size());
 		  }
 		   else {
-            if (ech == 1)
-              cout << endl << "UNKNOWN OP: '" + op + "'" << endl;
+              echo("UNKNOWN OP: '" + op + "' AT "+str_prec(i));
           }
         }
       }
