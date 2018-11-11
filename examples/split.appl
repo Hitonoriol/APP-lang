@@ -1,0 +1,31 @@
+[#main]
+[_subroutines space]
+[:split]
+[_10:arg:delimiter(1 character)][$10=%1]
+[_11:arg:string][$14=$11][$11=%b][$13=$11][$11=$14][$11=%0]
+[_12:private:temp buffer][$12=%D]
+[_13:private:string length]
+[$10=1][_take 1 char from input string at a time]
+[>12]
+[:split_main]
+[1]aA0?![$14=%za]a;1[$14=%0+][$10=%1][0][$13=%0][$11=%1]?![1][$14=%za][e];[1][$11=%0p][$10=%1]
+[#split_main]
+[#done]
+[_end of split]
+
+[:showstack]
+[1][$3=%E]
+[>16]{aPZw_W}
+[#end]
+
+[:main]
+[$5=0][_no floating point][1]
+"Split test;"wa_WP
+"Enter delimiter (1 character): "waWPib[0]0>1[!1]g![1]a"Hey! You entered more than 1 char!"Pw_WPa[#main];[1]<[$10=$c]a
+"Enter string (foo<delim>bar<delim>cake): "waWPi
+[_setting args and calling split][$11=$c][0][#split]
+[:done]
+[>15]
+[1]PE[0]w" words"Sw_WP
+[#showstack]
+[:end]
