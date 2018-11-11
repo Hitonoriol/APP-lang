@@ -7,8 +7,7 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-#define DATA0 0
-# define DATA1 1
+#include <stack> 
 # define DATA2 2
 # define DATA3 3
 # define DATA4 4
@@ -17,11 +16,15 @@
 # define DATA7 7
 # define STARTPOINT 8
 using namespace std;
+int DATA0 = 0;
+int DATA1 = 1;
 int dest = STARTPOINT; //destination cell
 int i = 0; //global execution iterator
 string in ; //input buffer
-vector < double > c; //double cells
-vector < string > sc; //string cells
+vector <double> c; //double cells
+vector <string> sc; //string cells
+stack <double> s;
+stack <string> ss;
 int u = STARTPOINT;
 int ech = 0; //debug mode
 bool ide = false; //persistent memory flag
@@ -566,7 +569,7 @@ void op(string arg) {
             }
             nestflag = false;
           } else if (op == "c") {	//Current memory position --> String[DATA7](output buffer)
-            ScellSet(SgetCell(u)+str_prec(u), DATA7);
+            cellSet(u,dest);
           } else if (op == "C") {	//0: Int[Int[DATA6]] <-- Int[current] 1:same thing, but w\ strings
             if (mode == 0)
               cellSet(getCell(u), (int) getCell(DATA6));
@@ -606,6 +609,18 @@ void op(string arg) {
           	ide = tide;
 		  } else if (op=="D") { //set destination to current cell
 		  	dest = u;
+		  } else if (op=="z") {	//push current cell to stack
+		  	if (mode == 0)
+			  s.push(getCell(u));
+			else
+			  ss.push(SgetCell(u));
+		  } else if (op == "Z"){	//put the top stack value to cell
+		  	if (mode==0) {cellSet(s.top()); s.pop();}
+		  	else {ScellSet(SgetCell(u)+ss.top()); ss.pop();}
+		  } else if (op == "0"){	//set DATA0 to current cell
+		  	DATA0 = u;
+		  } else if (op == "1"){	//set DATA1 to curent cell
+		  	DATA1 = u;
 		  }
 		   else {
             if (ech == 1)
