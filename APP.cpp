@@ -31,7 +31,17 @@ APPInterpreter(){
 }
 
 APPInterpreter(string program, int start, APPDump dump){
-	
+	cbuf = program;
+	c = dump.c;
+	sc = dump.sc;
+	s = dump.s;
+	ss = dump.ss;
+	DATA0 = dump.dc[0];
+	DATA1 = dump.dc[1];
+	DATA2 = dump.dc[2];
+	DATA3 = dump.dc[3];
+	op(program, start);
+	delete this;
 }
 
 void echo(string arg) {
@@ -191,7 +201,7 @@ bool cmds(string arg) {
 
   return false;
 }
-
+stack <int> gotoStack;
 bool goskip = false;
 void smop(string arg) {
   string ni = arg.substr(0, 1);
@@ -200,10 +210,17 @@ void smop(string arg) {
     if (!goskip) {
     	string lbl = ":" + arg.substr(1);
     	int relpos = arg.substr(1).length();
+		gotoStack.push(i);
       i = cbuf.find(lbl) + relpos+1;
+      
       wgt = true;
       echo("Going to "+lbl+" raw: "+cbuf.substr(i));
     } else goskip = false;
+  }
+  if ((cmd == "ret" || cmd == "return") && gotoStack.size() > 0) { 
+  	i = gotoStack.top();
+  	gotoStack.pop();
+  	wgt = true;
   }
   if (ni == ":") {/*Just so you know this char is in use*/}
   if (ni == "_") {/*Just so you know this char is in use[2]*/}
@@ -267,9 +284,9 @@ string trace = "";
 
 bool nestflag = false;
 
-void op(string arg) {
+void op(string arg, int startpos = 0) {
   int echof = 0;
-  i = 0;
+  i = startpos;
   int nn = 0;
   if (cmds(arg))
     return;

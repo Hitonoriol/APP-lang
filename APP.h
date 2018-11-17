@@ -44,11 +44,16 @@ public:
 	vector <string> sc;
 	stack <double> s;
 	stack <string> ss;
-	APPDump(vector <double> oldc, vector <string> oldsc, stack <double> olds, stack <string> oldss) {
+	int dc[4];
+	APPDump(vector <double> oldc, vector <string> oldsc, stack <double> olds, stack <string> oldss, int d0, int d1, int d2, int d3) {
 		c = oldc;
 		sc = oldsc;
 		s = olds;
 		ss = oldss;
+		dc[0] = d0;
+		dc[1] = d1;
+		dc[2] = d2;
+		dc[3] = d3;
 	}
 };
 

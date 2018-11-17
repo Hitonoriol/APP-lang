@@ -11,3 +11,4 @@ Makefile.win
 FileUtils.o
 GraphUtils.o
 StringUtils.o
+app_linuxamd64
