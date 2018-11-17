@@ -1,28 +1,18 @@
-#include <iostream>
-#include <stdlib.h>
-#include <iomanip>
-#include <ctime>
-#include <cstring>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <vector>
-#include <stack> 
-# define DATA2 2
-# define DATA3 3
-# define DATA4 4
-# define DATA5 5
-# define DATA6 6
-# define DATA7 7
-# define STARTPOINT 8
-using namespace std;
+#include "APP.h"
+
+string in; //input buffer
+class APPInterpreter {
+public:
+
 bool ech = 0; //debug mode
 int DATA0 = 0;
 int DATA1 = 1;
+int DATA2 = 2;
+int DATA3 = 3;
 int dest = STARTPOINT; //destination cell
 int i = 0; //global execution iterator
 bool wgt = false; //goto flag for block ops
-string in ; //input buffer
+bool grflag = false;
 vector <double> c; //double cells
 vector <string> sc; //string cells
 stack <double> s;
@@ -33,20 +23,20 @@ int mode = 0; //string/int mode
 int lp = 0; //pointer for JMP and RET
 bool debugrun = false; //flag to silence output when saving/translating
 string cbuf; //APP code buffer
-void op(string arg);
-void pxtc(string arg);
+
+APPGraphUtils graph;
+
+APPInterpreter(){
+	reset();
+}
+
+APPInterpreter(string program, int start, APPDump dump){
+	
+}
 
 void echo(string arg) {
 	if (ech) cout << arg << endl;
 }
-
-string str_prec(const double a_value, const int n = 0) {
-    ostringstream out;
-    out.precision(n);
-    out << std::fixed << a_value;
-    return out.str();
-}
-
 
 double getCell(int pos) {
   if (pos < c.size()) return c[pos];
@@ -97,9 +87,11 @@ void ScellContSet(string val, int start, int end) {
 }
 
 void reset() {
-	echo ("RESETTING");
+  echo ("RESETTING");
   DATA0 = 0;
   DATA1 = 1;
+  DATA2 = 2;
+  DATA3 = 3;
   s = stack<double>();
   ss = stack<string>();
   mode = 0;
@@ -110,29 +102,9 @@ void reset() {
   u = STARTPOINT;
   return;
 }
-string gt() {
-  string arg;
-  getline(std::cin, arg);
-  return arg;
-}
 
 void initRandom() {
   srand(time(NULL));
-}
-
-int iconv(string Text) {
-  int Result;
-  stringstream convert(Text);
-  if (!(convert >> Result)) Result = 0;
-  return Result;
-}
-
-string charc(char a) {
-  stringstream ss;
-  string s;
-  ss << a;
-  ss >> s;
-  return s;
 }
 
 int srnd(int first, int last) {
@@ -140,66 +112,9 @@ int srnd(int first, int last) {
   return val;
 }
 
-string spl(string s, int i) {
-  std::string delimiter = " ";
-  return s.substr(i, s.find(delimiter));
-}
-
-bool writeFile(string filename, string arg) {
-  ofstream fout(filename.c_str());
-  fout << arg;
-  fout.close();
-  return true;
-}
-
-string readFile(string path) {
-  ifstream input(path.c_str());
-  string str, result;
-  while (std::getline(input, str)) {
-    result += str;
-  }
-  return result;
-}
-vector < string > spl(string s, string delimiter) {
-  vector < string > ret;
-  s += delimiter;
-  size_t pos = 0;
-  string token;
-  int i = 0;
-  while ((pos = s.find(delimiter)) != std::string::npos) {
-    token = s.substr(0, pos);
-    ret.push_back(token);
-    s.erase(0, pos + delimiter.length());
-    i++;
-  }
-  return ret;
-}
-
-string split(string s, string delimiter, int numr) {
-  s += delimiter;
-  string trues = s;
-  size_t pos = 0;
-  int i = 0;
-  string token;
-  while ((pos = s.find(delimiter)) != std::string::npos) {
-    i++;
-    s.erase(0, pos + delimiter.length());
-  }
-  s = trues;
-  string ret[i];
-  i = 0;
-  while ((pos = s.find(delimiter)) != std::string::npos) {
-    token = s.substr(0, pos);
-    ret[i] = token;
-    i++;
-    s.erase(0, pos + delimiter.length());
-  }
-  return ret[numr];
-}
-
 bool cmds(string arg) {
   string bufa = arg;
-  arg = split(arg, " ", 0);
+  arg = APPStringUtils::split(arg, " ", 0);
   if (arg == "status") {
     cout << "STATUS\n----------\nI/O mode: " << mode << "\nCurrent position: " << u << "\nMode0 value: " << c[u] << "\nMode1 value: " << sc[u] << "\nPersistent memory: " << ide << "\nReserved cells values: ";
     int tci = 0;
@@ -245,29 +160,29 @@ bool cmds(string arg) {
     return true;
   }
   if (arg == "save") {
-    string fn = split(bufa, " ", 1);
+    string fn = APPStringUtils::split(bufa, " ", 1);
     fn += ".appl";
-    writeFile(fn, cbuf);
+    APPFileUtils::writeFile(fn, cbuf);
     cout << "Saved current command buffer to " + fn + ".";
     return true;
   }
   if (arg == "load") {
-    string fname = split(bufa, " ", 1) + ".appl";
-    cbuf = readFile(fname);
+    string fname = APPStringUtils::split(bufa, " ", 1) + ".appl";
+    cbuf = APPFileUtils::readFile(fname);
     cout << "Loaded " + fname + " to the command buffer.";
     return true;
   }
   if (arg == "run") {
-    string fname = split(bufa, " ", 1) + ".appl";
+    string fname = APPStringUtils::split(bufa, " ", 1) + ".appl";
     cout << "Running " << fname << endl;
-    cbuf = readFile(fname);
+    cbuf = APPFileUtils::readFile(fname);
     op(cbuf);
     cout << "\nEnd of program.";
     return true;
   }
   if (arg == "help") {
     cout << "INTERPRETER COMMANDS:\n**********\nstatus - debug info\nech - debug mode on/of\nrb - run commands from command buffer (last used)\npb - print command buffer contents\nsave <filename> - save command buffer to file\nload <filename> - load file to command buffer\nrun <filename> - run file\ncls - clear screen\nrunmode - toggle one-line and interactive mode (one-line by default)\n\nDo you want to see operators list? (y/n): ";
-    if (gt() == "y") {
+    if (APPStringUtils::gt() == "y") {
       cout << "\n**********\nOPERATORS:\n**********\n";
       cout << "\nOperators:\na\nSets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell\n\np\nIncrements current cell\n\nm\nDecrements current cell\n\nw\nWrites current int cell value if current mode is 0 and writes current string cell value if mode is 1\n\n_\nEchoes end of line\n\n>\nNext cell\n\n<\nPrevious cell\n\n.\nPuts a symbol with code from current int cell to current string cell\n\nv\nAdds 5 to current cell\n\nx\nAdds 10 to current cell\n\ni\nIf MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.\n\n+\nIf MODE is 0, sets value of current cell to sum of DATA0 and DATA1 cells (cell[current] = cell[DATA0] + cell[DATA1]), otherwise, joins two strings from DATA0 and DATA1 string cells to current string cell\n\n-\nSets value of current cell to cell[DATA0] - cell[DATA1]\n\n?\nIf cell[DATA0] == cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n g\nIf cell[DATA0] > cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n s\nIf cell[DATA0] < cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n r\nSets current cell value to random int in range min = cell[DATA0] & max = cell[DATA1]\n\n{...}\nRepeats operators inside of it (0 to cell[DATA3] times)\n\n!...;\nExecutes operators inside of it if cell[DATA2] == 1\n\nc\nPrints current cell number\n\nS\nSwitches MODE between 0 (int) and 1 (string)\n\n/\nMakes cell[current] = cell[DATA0] / cell[DATA1]\n\nj\nJumps to #CELL[DATA4]; first jmp is always to DATA4 cell\n\nR\nReturns to previous memory cell\n\nP\nPuts current string cell value to file with name from string cell DATA0\n\nl\nLoads string from file with name from string cell DATA0 to current string cell/n/n&\nIf MODE is 0, appends current number cell to string cell, otherwise, converts value from current string cell to current number cell\n\n[:labelname]\nCreates label\n\n[e]\nSkip next goto\n\n[#label]\nGo to label\n\n[s]\nJumps to DATA4 cell\n\n[!123]\nSet current cell to value\n\n[>5]\nJumps to cell\n\nA\nPuts substring from string in previous cell to current cell with start position from DATA0 and length from DATA1\n\nb\nPuts current string cell length to current number cell";
       return true;
@@ -277,22 +192,6 @@ bool cmds(string arg) {
   return false;
 }
 
-string replace(std::string str, const std::string& from, const std::string& to) {
-    size_t start_pos = 0;
-    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length();
-    }
-    return str;
-}
-
-string sconv(int Number) {
-  string Result;
-  stringstream convert;
-  convert << Number;
-  Result = convert.str();
-  return Result;
-}
 bool goskip = false;
 void smop(string arg) {
   string ni = arg.substr(0, 1);
@@ -309,10 +208,10 @@ void smop(string arg) {
   if (ni == ":") {/*Just so you know this char is in use*/}
   if (ni == "_") {/*Just so you know this char is in use[2]*/}
   if (ni == "$") { //$25=13 <--set 25th cell to 13 || $25=$13 <--set 25th cell to 13th value || $25=%appwW <-- exec operators in 25th cell
-  	vector<string> bff = spl(arg.substr(1),"=");
+  	vector<string> bff = APPStringUtils::spl(arg.substr(1),"=");
   	string fch = bff[1].substr(0,1);
-  	if (bff[0]=="c") bff[0] == str_prec(u);
-  	if (bff[1].substr(1)=="c") bff[1]=fch+str_prec(u);
+  	if (bff[0]=="c") bff[0] == APPStringUtils::str_prec(u);
+  	if (bff[1].substr(1)=="c") bff[1]=fch+APPStringUtils::str_prec(u);
   	if (fch == "$"){	//check:xvwWP_W[$0=$8][$0=%PwW]
   		int value = atoi(bff[1].substr(1).c_str()), pos = atoi(bff[0].c_str());
   		if (mode == 0){
@@ -343,7 +242,7 @@ void smop(string arg) {
 		string rbg = bff[1].substr(1);
 		string tbf = cbuf;
 		pxtc(rbg);
-		echo(str_prec(u)+"c = "+str_prec(getCell(u)));
+		echo(APPStringUtils::str_prec(u)+"c = "+APPStringUtils::str_prec(getCell(u)));
 		cbuf = tbf;
 		ide = tide;
 		u = tu;
@@ -353,7 +252,7 @@ void smop(string arg) {
   		 cellSet(atoi(bff[1].c_str()), atoi(bff[0].c_str()));
   }
   if (ni == ">") {
-    u = iconv(arg.substr(1));
+    u = APPStringUtils::iconv(arg.substr(1));
   }
   if (ni == "!") {
     cellSet(atof(arg.substr(1).c_str()));
@@ -436,7 +335,7 @@ void op(string arg) {
             cellSet(getCell(u) - 1);
           } else if (op == "w") {	//0: write int to output buffer 1: same with strings
             if (mode == 0) {
-              ScellSet(SgetCell(DATA7) + str_prec(getCell(u),getCell(DATA5)), DATA7);
+              ScellSet(SgetCell(DATA7) + APPStringUtils::str_prec(getCell(u),getCell(DATA5)), DATA7);
             } else {
               ScellSet(SgetCell(DATA7) + SgetCell(u), DATA7);
             }
@@ -453,7 +352,7 @@ void op(string arg) {
           } else if (op == ".") {	//char(Int[current]) --> append to String[current]
             int aa = c[u];
             char t = aa;
-            string a = charc(t);
+            string a = APPStringUtils::charc(t);
             ScellSet(SgetCell(u) + a);
           } else if (op == "v") {	//Int[current]+=5
             if (mode == 0) {
@@ -478,7 +377,7 @@ void op(string arg) {
               }
             } else {
               if (!debugrun)
-                ScellSet(gt());
+                ScellSet(APPStringUtils::gt());
             }
           } else if (op == "+") {	//Int[DATA0] + Int[DATA1] --> Int[current]
             if (mode == 0)
@@ -491,7 +390,7 @@ void op(string arg) {
             cellSet(getCell(DATA0) - getCell(DATA1));
           } else if (op == "?") {	//0: if Int[DATA0] == Int[DATA1] --> Int[DATA2]=1 1:same, but with strings
             if (mode == 0) {
-            	echo ("Compairing "+str_prec(getCell(DATA0))+" and "+str_prec(getCell(DATA1)));
+            	echo ("Compairing "+APPStringUtils::str_prec(getCell(DATA0))+" and "+APPStringUtils::str_prec(getCell(DATA1)));
               if (getCell(DATA0) == getCell(DATA1)) {
                 cellSet(1, DATA2);
               } else {
@@ -506,7 +405,7 @@ void op(string arg) {
               }
             }
           } else if (op == "g") {	//if Int[DATA0] > Int[DATA1] --> Int[DATA2]=1
-          	echo("if "+str_prec(getCell(DATA0))+">"+str_prec(getCell(DATA1)));
+          	echo("if "+APPStringUtils::str_prec(getCell(DATA0))+">"+APPStringUtils::str_prec(getCell(DATA1)));
             if (getCell(DATA0) > getCell(DATA1)) {
               cellSet(1, DATA2);
             } else {
@@ -541,13 +440,13 @@ void op(string arg) {
             }
             cc--;
             int fw = kk, inner = 1;
-            int oo = ::i;
+            int oo = i;
             cc = 0;
             while (inner < fw) {
               ao += arg.substr(oo + inner, 1);
               inner++;
             }
-            echo ("Cycling "+ao+" "+str_prec(getCell(DATA3))+" times");
+            echo ("Cycling "+ao+" "+APPStringUtils::str_prec(getCell(DATA3))+" times");
             while (cc < (int) getCell(DATA3)) {
               pxtc(ao);
               cc++;
@@ -574,7 +473,7 @@ void op(string arg) {
             }
             cc--;
             int fw = kk, inner = 1;
-            int oo = ::i;
+            int oo = i;
             if (getCell(DATA2) == 1) {
               cc = 0;
               while (inner < fw) {
@@ -610,12 +509,12 @@ void op(string arg) {
           } else if (op == "*") {	//Int[DATA0] * Int[DATA1] --> Int[current]
             cellSet(getCell(DATA0) * getCell(DATA1));
           } else if (op == "&") {	//0: Int[current] --> String[current] 1: String[current] --> Int[current]
-            if (mode == 0) ScellSet(str_prec(getCell(u)));
+            if (mode == 0) ScellSet(APPStringUtils::str_prec(getCell(u)));
             else cellSet(atof(SgetCell(u).c_str()));
           } else if (op == "P") {	//write String[current] to file String[DATA0]
-            writeFile(SgetCell(DATA0), SgetCell(u));
+            APPFileUtils::writeFile(SgetCell(DATA0), SgetCell(u));
           } else if (op == "l") {	//read file String[DATA0] --> String[current]
-            ScellSet(readFile(SgetCell(DATA0)));
+            ScellSet(APPFileUtils::readFile(SgetCell(DATA0)));
           } else if (op == "q") { //search for String[DATA1] in String[DATA0] --> Int[dest]
             cellSet(SgetCell(DATA0).find(SgetCell(DATA1)),dest);
           } else if (op == "Q") { //erase character from String[DATA0] with position Int[DATA0], length Int[DATA1] --> String[dest] 
@@ -646,12 +545,24 @@ void op(string arg) {
 		  	DATA0 = u;
 		  } else if (op == "1"){	//set DATA1 to curent cell
 		  	DATA1 = u;
+		  } else if (op == "2"){	//set DATA1 to curent cell
+		  	DATA2 = u;
+		  } else if (op == "3"){	//set DATA1 to curent cell
+		  	DATA3 = u;
 		  } else if (op == "E"){
 		  	if (mode == 0) cellSet(s.size());
 		  	else cellSet(ss.size());
+		  } else if (op == ":"){
+		  	if (!grflag){
+		  		graph.graph = thread(&APPGraphUtils::SDLsandbox, APPGraphUtils());
+			}
+		  	else
+		  		graph.graphStop();
+		  } else if (op == ","){
+		  	graph.graphDrawPlot(getCell(DATA0),getCell(DATA1));
 		  }
 		   else {
-              echo("UNKNOWN OP: '" + op + "' AT "+str_prec(i));
+              echo("UNKNOWN OP: '" + op + "' AT "+APPStringUtils::str_prec(i));
           }
         }
       }
@@ -674,46 +585,39 @@ void pxtc(string arg) {
 void promtExit(bool force = false){
 	if (force) exit(0);
 	cout << "\nQuit? (y/n): ";
-   		if (gt() == "y") {
+   		if (APPStringUtils::gt() == "y") {
       		exit(0);
     	}
 }
-
-string joinFrom(char* arg[], int from, int argc){
-	string ret = "";
-	while (from<argc){
-		ret+=string(arg[from]);
-		from++;
-	}
-	return ret;
-}
+};
 
 int main(int argc, char * argv[]) {
-  reset();
+	APPInterpreter app;
+	APPFileUtils files;
   if (argc == 1)
     cout << "APP INTERPRETER || STARTPOINT: " << STARTPOINT << "\nReserved memory cells:\n[DATA0] and [DATA1] data registers\n[DATA2] logical cell (0/1)\n[DATA3] cycle counter\n[DATA4] JMP pointer\n[DATA5] floating point precision value\n[DATA6] copy buffer\n[DATA7] output buffer" << "\nType \"help\" to see the list of available commands\n";
   if (argc > 1) {
     string runc = string(argv[1]);
     if (runc == "--file"){
     cout << "Running user program...\n\n";
-    op(readFile(argv[2]));
-    promtExit(true);
+    app.op(APPFileUtils::readFile(argv[2]));
+    app.promtExit(true);
 	}
 	if (runc == "--code"){
-		string fp = joinFrom(argv,2,argc);
-		op(fp);
-		promtExit(true);
+		string fp = APPStringUtils::joinFrom(argv,2,argc);
+		app.op(fp);
+		app.promtExit(true);
 	}
 	if (runc == "--help" || runc == "--usage"){
 		cout<<"Usage: app [--file <filename.appl>] or [--code <APP code>]"<<endl;
-		promtExit(true);
+		app.promtExit(true);
 	}
   }
   while (true) {
     cout << endl << ">> ";
     getline(std::cin, in );
-	if (in == "exit") promtExit();
+	if (in == "exit") app.promtExit();
 	else
-    op( in );
+    app.op(in);
   }
 }

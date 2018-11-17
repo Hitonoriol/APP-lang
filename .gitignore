@@ -4,3 +4,10 @@ make
 app-linuxamd64
 app-linuxamd32
 app-linuxarmel
+APP.dev
+APP.layout
+APP.o
+Makefile.win
+FileUtils.o
+GraphUtils.o
+StringUtils.o
