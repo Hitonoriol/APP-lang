@@ -1,4 +1,4 @@
-#include "APP.h"
+#include "headers/APP.h"
 
 void APPGraphUtils::graphRender(){
 	SDL_RenderPresent(renderer);
