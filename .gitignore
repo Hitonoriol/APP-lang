@@ -12,3 +12,5 @@ FileUtils.o
 GraphUtils.o
 StringUtils.o
 app_linuxamd64
+Interpreter.o
+DataCells.o
