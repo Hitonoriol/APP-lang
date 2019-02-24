@@ -221,6 +221,10 @@ Operators:
     <td>Go to label. Don't write ":" here. Just don't.</td> 
   </tr>
   <tr>
+    <td>[ret]</td>
+    <td>Return to last goto</td> 
+  </tr>
+  <tr>
     <td>[!12345]</td>
     <td>Sets current cell to a value</td> 
   </tr>
