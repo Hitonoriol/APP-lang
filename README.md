@@ -1,6 +1,25 @@
 <h1> APP-lang</h1>
 <h3>One-symbol esoteric programming language interpreter</h3>
-Operators:
+
+# Command line args
+
+Execute APP source file:
+
+`app --file <filename>`
+
+Execute APP code:
+
+`app --code <appcode>`
+
+Interactive mode:
+
+`app`
+
+Usage:
+
+`app --usage`
+
+# Operators:
 <pre>
 <table style="table-layout: fixed; width: 100%;word-wrap: normal;">
   <tr>
