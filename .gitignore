@@ -14,3 +14,7 @@ StringUtils.o
 app_linuxamd64
 Interpreter.o
 DataCells.o
+headers/GraphUtils.h
+headers/GraphUtils.h
+SDL2.dll
+GraphUtils.cpp

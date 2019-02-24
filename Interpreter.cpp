@@ -296,16 +296,7 @@ void APPInterpreter::op(string arg, int startpos) {
 		  } else if (op == "E"){
 		  	if (mode == 0) cells.cellSet(cells.s.size(),u);
 		  	else cells.cellSet(cells.ss.size(),u);
-		  } else if (op == ":"){
-		  	if (!grflag){
-		  		graph.graph = thread(&APPGraphUtils::SDLsandbox, APPGraphUtils());
-			}
-		  	else
-		  		graph.graphStop();
-		  } else if (op == ","){
-		  	graph.graphDrawPlot(cells.getCell(cells.DATA0),cells.getCell(cells.DATA1));
-		  }
-		   else {
+		  } else {
               echo("UNKNOWN OP: '" + op + "' AT "+APPStringUtils::str_prec(i));
           }
         }

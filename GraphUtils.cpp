@@ -13,9 +13,19 @@ void APPGraphUtils::graphCls(){
 	graphRender();
 }
 
-void APPGraphUtils::graphDrawPlot(int x, int y){
+void APPGraphUtils::graphDrawPlot(int x, int y){	//:[$0=50][$1=50],
+	graphSetColor(255,255,255);
+	cout<<"Est probitie"<<endl;
 	SDL_RenderDrawPoint(renderer, x, y);
 	graphRender();
+}
+
+void APPGraphUtils::graphPreDrawPlot(int ax, int ay){
+	this->x = ax;
+	this->y = ay;
+	action = "plot";
+	cout<<x<<" "<<y<<" "<<action<<endl;
+	SDLTasks();
 }
 
 void APPGraphUtils::graphDrawLine(int x1, int y1, int x2, int y2){
@@ -30,9 +40,17 @@ void APPGraphUtils::graphStop(){
 		return;
 }
 
+void APPGraphUtils::SDLTasks(){
+	if (action != "none"){
+    	graphDrawPlot(x, y);
+    	action = "none";
+	}
+}
+
 void APPGraphUtils::SDLpollEvents() {
 	while (1) {
-    	SDL_Event event;
+		SDLTasks();
+		SDL_Event event;
     	while (SDL_PollEvent(&event)) {
         	if (event.type == SDL_QUIT) {
 				graphStop();
@@ -43,6 +61,7 @@ void APPGraphUtils::SDLpollEvents() {
 }
 
 void APPGraphUtils::SDLsandbox(){
+	action = "none";
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(800, 600, 0, &window, &renderer);
     graphSetColor(0,0,0);

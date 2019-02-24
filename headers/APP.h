@@ -10,8 +10,6 @@
 #include <stack> 
 #include <thread>
 #include <fstream>
-#define SDL_MAIN_HANDLED
-#include "SDL2/SDL.h"
 # define DATA4 4
 # define DATA5 5
 # define DATA6 6
@@ -19,6 +17,5 @@
 # define STARTPOINT 8
 #include "FileUtils.h"
 #include "StringUtils.h"
-#include "GraphUtils.h"
 #include "Interpreter.h"
 using namespace std;

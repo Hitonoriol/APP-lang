@@ -16,7 +16,6 @@ public:
 	std::string trace = "";
 	bool nestflag = false;
 	std::stack <int> gotoStack;
-	APPGraphUtils graph;
 	APPDataCells cells;
 	APPInterpreter();
 	APPInterpreter(std::string program, int start, APPDataCells dump);
