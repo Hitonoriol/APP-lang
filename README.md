@@ -105,8 +105,8 @@ Operators:
     <td>Makes cell[current] = cell[DATA0] / cell[DATA1]</td> 
   </tr>
   <tr>
-    <td>R</td>
-    <td>Makes cell[current] = cell[DATA0] / cell[DATA1]</td> 
+    <td>*</td>
+    <td>Makes cell[current] = cell[DATA0] * cell[DATA1]</td> 
   </tr>
   <tr>
     <td>j</td>
@@ -114,7 +114,7 @@ Operators:
   </tr>
 <tr>
     <td>R</td>
-    <td>Returns to previous cell (works only after "j")</td> 
+    <td>Return from cell jump (works only after "j")</td> 
   </tr>
   <tr>
     <td>C</td>
@@ -122,7 +122,7 @@ Operators:
   </tr>
   <tr>
     <td>@</td>
-    <td>Unar minus to current cell</td> 
+    <td>Unary minus to current cell (yep, that's important)</td> 
   </tr>
   <tr>
     <td>P</td>
@@ -168,13 +168,25 @@ Operators:
     <td>1</td>
     <td>Set DATA1 to current cell's address</td> 
   </tr>
+<tr>
+    <td>2</td>
+    <td>Set DATA2 to current cell's address</td> 
+  </tr>
+<tr>
+    <td>3</td>
+    <td>Set DATA3 to current cell's address</td> 
+  </tr>
      <tr>
     <td>z</td>
-    <td>Pushes current cell's value to stack (mode0 -> int; mode1 -> string)</td> 
+    <td>Pushes current cell's value to stack (two different stacks for int and string cells | mode0 -> int; mode1 -> string)</td> 
   </tr>
      <tr>
     <td>Z</td>
-    <td>Pops the top value from stack to current cell</td> 
+    <td>Pops the top value from stack to current cell (mode0 -> int; mode1 -> string)</td> 
+  </tr>
+     <tr>
+    <td>E</td>
+    <td>Puts length of stack to Int[CURRENT] (mode0 -> length of int stack; mode1 -> length  of string stack)</td> 
   </tr>
 <tr>
     <td>[$5=10]</td>
