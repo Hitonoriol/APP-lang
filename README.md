@@ -1,6 +1,25 @@
 <h1> APP-lang</h1>
 <h3>One-symbol esoteric programming language interpreter</h3>
-Operators:
+
+# Command line args
+
+Execute APP source file:
+
+`app --file <filename>`
+
+Execute APP code:
+
+`app --code <appcode>`
+
+Interactive mode:
+
+`app`
+
+Usage:
+
+`app --usage`
+
+# Operators:
 <pre>
 <table style="table-layout: fixed; width: 100%;word-wrap: normal;">
   <tr>
@@ -219,6 +238,10 @@ Operators:
 <tr>
     <td>[#label]</td>
     <td>Go to label. Don't write ":" here. Just don't.</td> 
+  </tr>
+  <tr>
+    <td>[ret]</td>
+    <td>Return to last goto</td> 
   </tr>
   <tr>
     <td>[!12345]</td>
