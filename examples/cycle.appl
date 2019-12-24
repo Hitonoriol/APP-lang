@@ -1,0 +1,5 @@
+[*3=cycle_counter]	[_just so we know this cell is the cycle counter]
+[>cycle_counter][!10]	[_setting counter to 10]
+
+[>20]{pw_}		[_moving to some empty cell and incrementing it in cycle]
+W			[_print the output buffer]

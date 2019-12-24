@@ -18,11 +18,11 @@ public:
 		DATA2 = d2;
 		DATA3 = d3;
 	}
-	
+
 	APPDataCells(){
 		reset();
 	}
-	
+
 	void reset();
 	double getCell(int pos);
 	void cellSet(double value, int pos);

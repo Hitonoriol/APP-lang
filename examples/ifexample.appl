@@ -1,1 +1,6 @@
-[>0][!1]>[!1][>100]?!ppwWP;
+[_If operator compares 0'th and 1'st cells and sets 2'nd cell to 1 if they are equal or to 0 if they aren't]
+
+[>0][!1]	[_Setting first operand to 1]
+>[!1]		[_setting second operand to the same value]
+[>10]?		[_checking if our two operands are equal]
+!ppwW;		[_if they are equal, increment current cell 2 times and print it's value]

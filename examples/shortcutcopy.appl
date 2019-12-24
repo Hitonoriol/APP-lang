@@ -1,1 +1,4 @@
-xv[$0=$8][$0=%wW]Pp_wWP_WcW
+[>8]
+xv	[_Setting current cell to 15]
+[$0=$8]	[_Copying value of current cell to the 0'th]
+[$0=%wW][_Executing code from 0'th cell: print its contents]

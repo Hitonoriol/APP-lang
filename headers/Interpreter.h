@@ -1,5 +1,8 @@
+#include <map>
 #include "DataCells.h"
 class APPInterpreter {
+private:
+    std::map<std::string, int> var;
 public:
 	bool ech = 0; //debug mode
 	int dest = STARTPOINT; //destination cell
@@ -27,4 +30,8 @@ public:
 	void echo(std::string arg);
 	void initRandom();
 	int srnd(int first, int last);
+
+	int alias_get(std::string var);
+	bool alias_exists(std::string arg);
+    void alias_set(std::string var, int c);
 };

@@ -1,0 +1,5 @@
+[_You can execute APP code from string cells! Here's how:]
+
+[>8]
+"appwW_cwW_"	[_Put some code into current cell as string]
+[$15=#8]	[_Execute code from 8'th cell with starting point in 15'th cell]

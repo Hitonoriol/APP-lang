@@ -11,6 +11,25 @@ APPInterpreter::APPInterpreter(string program, int start, APPDataCells dump){
 	delete this;
 }
 
+int APPInterpreter::alias_get(std::string var){
+    if (alias_exists(var))
+        return this->var[var];
+    else
+        return -1;
+}
+
+bool APPInterpreter::alias_exists(std::string arg) {
+    if (this->var.find(arg) == this->var.end())
+        return false;
+    else
+        return true;
+}
+
+void APPInterpreter::alias_set(std::string var, int c){
+    if (alias_exists(var)) this->var.erase(var);
+    this->var.insert(std::make_pair(var, c));
+}
+
 void APPInterpreter::op(string arg, int startpos) {
   int echof = 0;
   i = startpos;
@@ -59,6 +78,7 @@ void APPInterpreter::op(string arg, int startpos) {
         else {
           echof = 1;
         }
+
         if (echof == 1 && op != "\"") {
         	cells.ScellSet(cells.SgetCell(u)+op,u);
         } else {
@@ -85,6 +105,7 @@ void APPInterpreter::op(string arg, int startpos) {
             }
           } else if (op == "W") {	//write output buffer to string
             cout << cells.SgetCell(DATA7);
+            cells.ScellSet("", DATA7);
           } else if (op == "P") {	// "" --> String[DATA7](clear the output buffer)
             cells.ScellSet("", DATA7);
           } else if (op == "_") {	//append line break --> String[DATA7](output buffer)
@@ -123,7 +144,7 @@ void APPInterpreter::op(string arg, int startpos) {
               if (!debugrun)
                 cells.ScellSet(APPStringUtils::gt(),u);
             }
-          } else if (op == "+") {	//Int[DATA0] + Int[DATA1] --> Int[current]
+          } else if (op == "+") {	//Int[DATA0] + Int[DATA1] --> Int[current] or concat two strings
             if (mode == 0)
               cells.cellSet(cells.getCell(cells.DATA0) + cells.getCell(cells.DATA1),u);
             else{
@@ -236,7 +257,7 @@ void APPInterpreter::op(string arg, int startpos) {
             }
             nestflag = false;
           } else if (op == "c") {	//Current memory position --> String[DATA7](output buffer)
-            cells.cellSet(u,dest);
+            cells.cellSet(u, u);
           } else if (op == "C") {	//0: Int[Int[DATA6]] <-- Int[current] 1:same thing, but w\ strings
             if (mode == 0)
               cells.cellSet(cells.getCell(u), (int) cells.getCell(DATA6));
@@ -261,7 +282,7 @@ void APPInterpreter::op(string arg, int startpos) {
             cells.ScellSet(APPFileUtils::readFile(cells.SgetCell(cells.DATA0)),u);
           } else if (op == "q") { //search for String[DATA1] in String[DATA0] --> Int[dest]
             cells.cellSet(cells.SgetCell(cells.DATA0).find(cells.SgetCell(cells.DATA1)),dest);
-          } else if (op == "Q") { //erase character from String[DATA0] with position Int[DATA0], length Int[DATA1] --> String[dest] 
+          } else if (op == "Q") { //erase character from String[DATA0] with position Int[DATA0], length Int[DATA1] --> String[dest]
             cells.ScellSet(cells.SgetCell(cells.DATA0).erase(cells.getCell(cells.DATA0), cells.getCell(cells.DATA1)),dest);
           } else if (op == "e") { //execute APP code from String[Int[DATA0]]
           	int lastpos = i;
@@ -289,11 +310,11 @@ void APPInterpreter::op(string arg, int startpos) {
 		  	cells.DATA0 = u;
 		  } else if (op == "1"){	//set DATA1 to curent cell
 		  	cells.DATA1 = u;
-		  } else if (op == "2"){	//set DATA1 to curent cell
+		  } else if (op == "2"){	//set DATA2 to curent cell
 		  	cells.DATA2 = u;
-		  } else if (op == "3"){	//set DATA1 to curent cell
+		  } else if (op == "3"){	//set DATA3 to curent cell
 		  	cells.DATA3 = u;
-		  } else if (op == "E"){
+		  } else if (op == "E"){    //set current cell to stack size
 		  	if (mode == 0) cells.cellSet(cells.s.size(),u);
 		  	else cells.cellSet(cells.ss.size(),u);
 		  } else {
@@ -317,28 +338,11 @@ bool APPInterpreter::cmds(string arg) {
   string bufa = arg;
   arg = APPStringUtils::split(arg, " ", 0);
   if (arg == "status") {
-    cout << "STATUS\n----------\nI/O mode: " << mode << "\nCurrent position: " << u << "\nMode0 value: " << cells.c[u] << "\nMode1 value: " << cells.sc[u] << "\nPersistent memory: " << ide << "\nReserved cells values: ";
-    int tci = 0;
-    while (tci < STARTPOINT) {
-      cout << "[" << cells.c[tci] << "|" << cells.sc[tci] << "]";
-      if (STARTPOINT - tci > 1) cout << ">";
-      tci++;
-    }
-    cout << "\n----------";
+    cout << "Mode: " << mode << "\nCurrent memory cell: " << u << "\nPersistent memory: " << ide;
     return true;
   }
   if (arg == "reset") {
     reset();
-    return true;
-  }
-  if (arg == "runmode") {
-    if (ide) {
-      ide = false;
-      echo("Persistent memory off!\n(all data cells will be wiped after program execution)");
-    } else {
-      ide = true;
-      echo("Persistent memory on!\n(data cells won't be wiped after program execution')");
-    }
     return true;
   }
   if (arg == "rb") {
@@ -347,17 +351,6 @@ bool APPInterpreter::cmds(string arg) {
   }
   if (arg == "pb") {
     cout << cbuf;
-    return true;
-  }
-  if (arg == "cls") {
-    system("cls");
-    return true;
-  }
-  if (arg == "ech") {
-    if (ech)
-      ech = false;
-    else
-      ech = true;
     return true;
   }
   if (arg == "save") {
@@ -382,12 +375,7 @@ bool APPInterpreter::cmds(string arg) {
     return true;
   }
   if (arg == "help") {
-    cout << "INTERPRETER COMMANDS:\n**********\nstatus - debug info\nech - debug mode on/of\nrb - run commands from command buffer (last used)\npb - print command buffer contents\nsave <filename> - save command buffer to file\nload <filename> - load file to command buffer\nrun <filename> - run file\ncls - clear screen\nrunmode - toggle one-line and interactive mode (one-line by default)\n\nDo you want to see operators list? (y/n): ";
-    if (APPStringUtils::gt() == "y") {
-      cout << "\n**********\nOPERATORS:\n**********\n";
-      cout << "\nOperators:\na\nSets current int cell to 0 if MODE is 0 and if MODE is 1, clears current string cell\n\np\nIncrements current cell\n\nm\nDecrements current cell\n\nw\nWrites current int cell value if current mode is 0 and writes current string cell value if mode is 1\n\n_\nEchoes end of line\n\n>\nNext cell\n\n<\nPrevious cell\n\n.\nPuts a symbol with code from current int cell to current string cell\n\nv\nAdds 5 to current cell\n\nx\nAdds 10 to current cell\n\ni\nIf MODE is 0, gets int from keyboard to int cell, if MODE is 1, gets string from keyboard.\n\n+\nIf MODE is 0, sets value of current cell to sum of DATA0 and DATA1 cells (cell[current] = cell[DATA0] + cell[DATA1]), otherwise, joins two strings from DATA0 and DATA1 string cells to current string cell\n\n-\nSets value of current cell to cell[DATA0] - cell[DATA1]\n\n?\nIf cell[DATA0] == cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n g\nIf cell[DATA0] > cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n s\nIf cell[DATA0] < cell[DATA1], sets cell[DATA2] to 1, otherwise, to 0.\n\n r\nSets current cell value to random int in range min = cell[DATA0] & max = cell[DATA1]\n\n{...}\nRepeats operators inside of it (0 to cell[DATA3] times)\n\n!...;\nExecutes operators inside of it if cell[DATA2] == 1\n\nc\nPrints current cell number\n\nS\nSwitches MODE between 0 (int) and 1 (string)\n\n/\nMakes cell[current] = cell[DATA0] / cell[DATA1]\n\nj\nJumps to #CELL[DATA4]; first jmp is always to DATA4 cell\n\nR\nReturns to previous memory cell\n\nP\nPuts current string cell value to file with name from string cell DATA0\n\nl\nLoads string from file with name from string cell DATA0 to current string cell/n/n&\nIf MODE is 0, appends current number cell to string cell, otherwise, converts value from current string cell to current number cell\n\n[:labelname]\nCreates label\n\n[e]\nSkip next goto\n\n[#label]\nGo to label\n\n[s]\nJumps to DATA4 cell\n\n[!123]\nSet current cell to value\n\n[>5]\nJumps to cell\n\nA\nPuts substring from string in previous cell to current cell with start position from DATA0 and length from DATA1\n\nb\nPuts current string cell length to current number cell";
-      return true;
-    }
+    cout << "status - info\nreset - reset the interpreter\nrb - run commands from command buffer (last used)\npb - print command buffer contents\nsave <filename> - save command buffer to file\nload <filename> - load file to command buffer\nrun <filename> - run file\n";
   }
 
   return false;
@@ -402,25 +390,41 @@ void APPInterpreter::smop(string arg) {
     	int relpos = arg.substr(1).length();
 		gotoStack.push(i);
       i = cbuf.find(lbl) + relpos+1;
-      
+
       wgt = true;
       echo("Going to "+lbl+" raw: "+cbuf.substr(i));
     } else goskip = false;
   }
-  if ((cmd == "ret" || cmd == "return") && gotoStack.size() > 0) { 
+  if ((cmd == "ret" || cmd == "return") && gotoStack.size() > 0) {
   	i = gotoStack.top();
   	gotoStack.pop();
   	wgt = true;
   }
+  if (cmd == "mode_str")
+    mode = 1;
+  if (cmd == "mode_num")
+    mode = 0;
   if (ni == ":") {/*Just so you know this char is in use*/}
   if (ni == "_") {/*Just so you know this char is in use[2]*/}
+
+  if (ni == "*") {//[*5=source]
+        vector<string> bff = APPStringUtils::spl(arg.substr(1),"=");
+        std::string value = bff[1];
+        int pos = atoi(bff[0].c_str());
+        alias_set(value, pos);
+	}
+
   if (ni == "$") { //$25=13 <--set 25th cell to 13 || $25=$13 <--set 25th cell to 13th value || $25=%appwW <-- exec operators in 25th cell
   	vector<string> bff = APPStringUtils::spl(arg.substr(1),"=");
   	string fch = bff[1].substr(0,1);
   	if (bff[0]=="c") bff[0] == APPStringUtils::str_prec(u);
+    if (alias_exists(bff[0])) bff[0] = std::to_string(alias_get(bff[0]));
   	if (bff[1].substr(1)=="c") bff[1]=fch+APPStringUtils::str_prec(u);
   	if (fch == "$"){	//check:xvwWP_W[$0=$8][$0=%PwW]
-  		int value = atoi(bff[1].substr(1).c_str()), pos = atoi(bff[0].c_str());
+        std::string cellnum = bff[1].substr(1);
+        if (alias_exists(cellnum))
+            cellnum = std::to_string(alias_get(cellnum));
+  		int value = atoi(cellnum.c_str()), pos = atoi(bff[0].c_str());
   		if (mode == 0){
   			cells.cellSet(cells.getCell(value), pos);
   		}
@@ -432,6 +436,7 @@ void APPInterpreter::smop(string arg) {
 		int ti = i, tu = u;
 		bool tide = ide;
 		ide = true;
+		if (alias_exists(bff[0])) bff[0] = std::to_string(alias_get(bff[0]));
 		u = atoi(bff[0].c_str());
 		string rbg = cells.SgetCell(atoi(bff[1].substr(1).c_str()));
 		string tbf = cbuf;
@@ -454,20 +459,19 @@ void APPInterpreter::smop(string arg) {
 		ide = tide;
 		u = tu;
 		i = ti;
-		
+
 	} else
   		 cells.cellSet(atoi(bff[1].c_str()), atoi(bff[0].c_str()));
   }
   if (ni == ">") {
-    u = APPStringUtils::iconv(arg.substr(1));
+    std::string cellnum = arg.substr(1);
+    if (alias_exists(cellnum))
+        cellnum = std::to_string(alias_get(cellnum));
+    u = APPStringUtils::iconv(cellnum);
   }
   if (ni == "!") {
     cells.cellSet(atof(arg.substr(1).c_str()),u);
   }
-  if (ni == "0") {
-    mode = 0;
-  }
-  if (ni == "1") mode = 1;
   if (ni == "e") goskip = true;
 }
 
@@ -476,10 +480,15 @@ void APPInterpreter::pxtc(string arg) {
 }
 
 void APPInterpreter::reset() {
-  echo ("RESETTING");
-  mode = 0;
-  u = STARTPOINT;
-  return;
+    mode = 0;
+    u = STARTPOINT;
+    cells.c.clear();
+    cells.sc.clear();
+    for (int i = 0; i < 4; ++i)
+        cells.c.push_back(0);
+    cells.c.push_back(DATA4);
+    cells.c.push_back(3);
+    return;
 }
 
 void APPInterpreter::echo(string arg) {

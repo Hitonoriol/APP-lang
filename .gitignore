@@ -18,3 +18,7 @@ headers/GraphUtils.h
 headers/GraphUtils.h
 SDL2.dll
 GraphUtils.cpp
+APP-Lang.cbp
+*.bat
+*.depend
+*.layout

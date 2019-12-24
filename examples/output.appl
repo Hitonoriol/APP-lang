@@ -1,0 +1,8 @@
+[_The output in app-lang is buffered. This means we can, for example concatenate multiple strings and numbers by queuing their output:]
+
+[!42]		[_setting current cell to 42]
+"First string "	[_putting some string to the same cell]
+SwSwSa		[_writing string, then our number to the output buffer, then clearing current string cell]
+" second string"[_creating other string]
+w		[_putting it to the buffer]
+W		[_writing out everything we put in the buffer]

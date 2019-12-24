@@ -1,0 +1,9 @@
+[_Alias example]
+
+[*8=main]	[_setting 8th cell's alias to main]
+>>>>>cwW_	[_moving 5 cells away from it and printing our current position (should be 13)]
+[$main=%cwW_]	[_executing code from our cell with alias main: print current position (should be 8)]
+[*10=foo]	[_setting 10th cell's alias to foo]
+[$foo=42]	[_setting cell with alias foo to 42]
+[$main=$foo]	[_setting main's value to foo]
+[$main=%wW_]	[_printing value from main (should be 42)]

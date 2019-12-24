@@ -1,1 +1,5 @@
-[#skip]"return demo"SwW[:skip][ret]
+[#skip]		[_Jumping to label 'skip' (1)]
+"return demo"	[_Creating a string in current memory cell (3)]
+SwW		[_Writing our string (4)]
+[:skip]
+[ret]		[_Returning to (jump position + 1) (2)]

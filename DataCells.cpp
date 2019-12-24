@@ -14,7 +14,7 @@ void APPDataCells::reset(){
 }
 
 double APPDataCells::getCell(int pos) {
-  if (pos < c.size()) return c[pos];
+  if ((unsigned)pos < c.size()) return c[pos];
   else return 0;
 }
 

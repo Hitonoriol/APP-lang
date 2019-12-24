@@ -1,0 +1,36 @@
+[mode_str]
+"Basic math operations."
+w_W
+[mode_num]
+jaj
+S"Input first number: "waWSi
+Rpj
+S"Input second number: "waWSi
+Rxj
+
+[mode_str]
+a"Addition: "
+w
+[mode_num]
++
+w_
+
+[mode_str]
+a"Subtraction: "w
+[mode_num]
+-
+w_
+
+[mode_str]
+a"Multiplication: "w
+[mode_num]
+*
+w_
+
+[mode_str]
+a"Division: "w
+[mode_num]
+/
+w_
+
+W
