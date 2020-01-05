@@ -11,6 +11,75 @@ Interactive mode:
 
 `app`
 
+# Memory structure
+APP lang memory consists of 2 layers of cells numbered from 0 to whatever number of cells can be allocated until you run out of memory.
+
+Layers are labeled as: `0 - number cells` and `1 - String cells`
+
+You can switch between layers by switching MODE: either by using operator `S` which flips MODE's current value (if it's 0 then make it 1 and back by the same logic) or by using setters: `[mode_num]` for MODE 0 and `[mode_str]` for MODE 1. Most operators that take arguments and return values do different things depending on the current MODE.
+
+Even though memory cells are numbered starting from 0, there are cells reserved for certain operators (often referred to as DATA* where * is cell's number):
+<table>
+   <tr>
+    <th>Cell number</th>
+    <th>Description</th> 
+  </tr>
+  
+   <tr>
+    <td>0</td>
+    <td>First argument cell.
+      
+For example, operator <b>+</b> in MODE 1 will take values from this cell and DATA1, add them and put the result to current cell</td> 
+  </tr>
+  
+   <tr>
+    <td>1</td>
+    <td>Second argument cell.</td> 
+  </tr>
+  
+   <tr>
+    <td>2</td>
+    <td>Logical cell.
+      
+Any logical operation (?, g, s) will put it's result to this cell. Then, the conditional execution operator !...; will execute operators between ! and ; if this cell's value is 1, otherwise this block will be skipped.</td> 
+  </tr>
+  
+   <tr>
+    <td>3</td>
+    <td>Cycle counter.
+
+Cycle operator {...} will execute operators between { and } with each iteration decrementing this cell by 1 until it reaches 0.</td> 
+  </tr>
+  
+   <tr>
+    <td>4</td>
+    <td>Memory jump pointer.
+
+Points to the number of cell to which the jump should be made by j operator. By default this cell's value is it's own number (4) so you can change it and make jump to the cell you need: jxj - will jump to this cell, make its value greater by 10 and jump to newly set cell number. You can then return to cell you jumped from using operator R.</td> 
+  </tr>
+  
+   <tr>
+    <td>5</td>
+    <td>Floating point precision.
+
+Output operator w sets floating point precision based on this cell. Default value is 3.</td> 
+  </tr>
+  
+   <tr>
+    <td>6</td>
+    <td>Copy pointer.
+
+Must be set to the number of cell you wish to copy current cell's value to. Then you can call copy operator C and the value will be copied to the specified cell.</td> 
+  </tr>
+  
+   <tr>
+    <td>7</td>
+    <td>Output buffer.
+
+Everything you print out with w operator gets appended to this String cell. Then, to print its contents to the screen you need to use W operator.</td> 
+  </tr>
+</table>
+
 # Operators:
 <pre>
 <table style="table-layout: fixed; width: 100%;word-wrap: normal;">
@@ -198,6 +267,10 @@ Interactive mode:
      <tr>
     <td>E</td>
     <td>Put length of stack to current cell (mode0 -> length of int stack; mode1 -> length  of string stack)</td> 
+  </tr>
+   <tr>
+    <td>"..."</td>
+    <td>Set current String cell to the string value specified between quotation marks.</td> 
   </tr>
 <tr>
     <td>[mode_num]</td>
