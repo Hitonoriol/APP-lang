@@ -1,1 +1,57 @@
-"APP APP interpreter"SwWP_[:main][>100]a_"> "wWP[>0]ib[>6][!3][>0]SCS[>6][!10][>0]CS[!-1]S{[>0]SpS[>1][!1][>11]A[>6][!0][>11]C[>0][>1]a"p"?![>100]SpS;[>1]a"m"?![>100]SmS;[>1]a"w"?![>100]SwWPS;[>1]a"e"?![e];}[#main][>100]a"Bye!"wWP_a
+[mode_str]
+"APP APP interpreter"w_
+a"Available operators: a, p, m, <, >, w"w_
+W
+
+[*12=prompt]	[_where the > prompt string is stored]
+[*13=origin]	[_our emulated memory origin cell]
+[#main]
+
+[:shift_left]
+[>origin]zacm[>6][!1]	[_saving value from origin, putting (current memory position-1) in it and preparing to copy it to DATA1]
+[>0]za[!12]		[_setting first operand to min position]
+[>1]za[>origin]C	[_saving current DATA1 contents and copying new memory position in it]
+s			[_if min position is smaller than our new position,]
+![>origin]<[*c=origin];	[_change it and reassign origin alias]
+[>1]aZ			[_popping DATA1's contents]
+[>0]aZ			[_popping DATA1's contents]
+![>origin]>aZ<;		[_popping old origin's contents if shift was successful]
+[>2]@			[_flipping comparison result]
+![>origin]Sa" (Error: couldn't shift left. This is the first cell.) "wWaSaZ;		[_popping old origin's contents if shift was unsuccessful]
+[>origin]
+[ret]
+
+[:main]
+[mode_str]
+[>prompt]a
+_"> "wW
+
+[>0]ib		[_getting user input string and saving its length in DATA0]
+[>6][!3]	[_setting copy pointer to DATA3 (cycle counter)]
+[>0]SCS		[_copying string length from DATA0 to DATA3]
+[>6][!10]	[_setting copy pointer to DATA10]
+[>0]SmCS	[_copying (string length - 1) to cycle counter cell]
+[!-1]		[_setting DATA0 to -1 (because it's used as offset pointer for our input string and is incremented at the beginning of each iteration)]
+{
+	[>0]p	[_incrementing current offset in string]
+	[>1][!1][_setting second operand to 1 (to extract 1 character from source string)]
+
+	[>11]aDA[_getting current character]
+	[>6][!0][_setting copy pointer to DATA0]
+	[>0]za	[_pushing source string to stack]
+	[>11]C	[_copying current character to DATA0]
+
+	[_checking if current symbol is in operators list]
+	[_and if it is, execute the respective operation]
+	[>1]a"a"?![>origin] [mode_num] a [mode_str];
+	[>1]a"p"?![>origin] [mode_num] p [mode_str];
+	[>1]a"m"?![>origin] [mode_num] m [mode_str];
+	[>1]a"w"?![>origin] [mode_num] wW [mode_str];
+	[>1]a">"?![>origin] [mode_num] >[*c=origin] [mode_str];
+	[>1]a"<"?![>origin] [mode_num] [#shift_left] [mode_str];
+	[>1]a"e"?![e];
+
+	[>0]aZ	[_popping source string back to DATA0]
+}
+[#main]
+[>prompt]a"Bye!"wWP_a
