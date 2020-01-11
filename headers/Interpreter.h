@@ -22,7 +22,7 @@ public:
 	APPDataCells cells;
 	APPInterpreter();
 	APPInterpreter(std::string program, int start, APPDataCells dump);
-	void op(std::string arg, int startpos = 0);
+	void op(std::string arg, int startpos = 0, int len = -1);
 	bool cmds(std::string arg);
 	void smop(std::string arg);
 	void reset();

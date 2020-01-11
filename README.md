@@ -202,7 +202,7 @@ Everything you print out with w operator gets appended to this String cell. Then
   </tr>
   <tr>
     <td>@</td>
-    <td>Current cell *= -1</td> 
+    <td>Logically flip current cell (if its value is 1, set it to 0, otherwise set it to 1)</td> 
   </tr>
   <tr>
     <td>P</td>

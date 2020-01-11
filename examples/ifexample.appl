@@ -2,5 +2,6 @@
 
 [>0][!1]	[_Setting first operand to 1]
 >[!1]		[_setting second operand to the same value]
-[>10]?		[_checking if our two operands are equal]
+[>10]
+?		[_checking if our two operands are equal]
 !ppwW;		[_if they are equal, increment current cell 2 times and print it's value]
